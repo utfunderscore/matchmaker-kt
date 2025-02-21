@@ -1,0 +1,10 @@
+[ {
+  "type" : "pgvector",
+  "data" : {
+    "name" : "pgvector-test",
+    "minPoolSize" : 20,
+    "teamSize" : 1,
+    "numberOfTeams" : 2,
+    "requiredStatistics" : [ "kdr", "winpct", "level", "killsPerMatch", "matchesPlayed" ]
+  }
+} ]
