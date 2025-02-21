@@ -37,6 +37,7 @@ class Application(
             .create {
                 it.showJavalinBanner = false
                 it.useVirtualThreads = true
+                it.bundledPlugins.enableDevLogging()
             }
 
     init {
