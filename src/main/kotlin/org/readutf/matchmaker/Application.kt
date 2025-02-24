@@ -64,7 +64,7 @@ class Application(
             .delete("/api/matchmaker/{name}", MatchmakerDeleteEndpoint(matchmakerManager))
             .get("/api/queue/{name}", QueueInfoEndpoint(queueManager))
             .get("/api/queues", QueueListEndpoint(queueManager))
-            .put("/api/queue/{name}/create", QueueCreateEndpoint(queueManager, matchmakerManager))
+            .put("/api/queue/{name}", QueueCreateEndpoint(queueManager, matchmakerManager))
             .delete("/api/queue/{name}", QueueDeleteEndpoint(queueManager))
 
         Runtime.getRuntime().addShutdownHook(
@@ -75,8 +75,11 @@ class Application(
         )
     }
 
-    fun start() {
-        javalin.start(7000)
+    fun start(
+        hostname: String,
+        port: Int,
+    ) {
+        javalin.start(hostname, port)
     }
 
     companion object {
@@ -86,5 +89,5 @@ class Application(
 
 fun main() {
     val workDir = Path(System.getProperty("user.dir"))
-    Application(workDir).start()
+    Application(workDir).start("0.0.0.0", 7000)
 }

@@ -14,11 +14,15 @@ class VectorSearchCreator(
     val hikariDataSource: HikariDataSource,
 ) : MatchmakerCreator {
     override fun createMatchmaker(jsonNode: JsonNode): Result<Matchmaker, Throwable> {
-        val name = jsonNode["name"]?.asText() ?: return Err(IllegalArgumentException("Missing 'name' field"))
+        val name =
+            jsonNode["name"]?.asText()
+                ?: return Err(IllegalArgumentException("Missing 'name' field"))
         val minPoolSize =
-            jsonNode["minPoolSize"]?.asInt() ?: return Err(IllegalArgumentException("Missing 'minPoolSize' field"))
+            jsonNode["minPoolSize"]?.asInt()
+                ?: return Err(IllegalArgumentException("Missing 'minPoolSize' field"))
         val teamSize =
-            jsonNode["teamSize"]?.asInt() ?: return Err(IllegalArgumentException("Missing 'teamSize' field"))
+            jsonNode["teamSize"]?.asInt()
+                ?: return Err(IllegalArgumentException("Missing 'teamSize' field"))
         val numberOfTeams =
             jsonNode["numberOfTeams"]?.asInt()
                 ?: return Err(IllegalArgumentException("Missing 'numberOfTeams' field"))

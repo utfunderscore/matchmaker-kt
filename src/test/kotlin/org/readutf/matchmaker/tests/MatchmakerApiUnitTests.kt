@@ -1,4 +1,4 @@
-package org.readutf.matchmaker.matchmaker.api
+package org.readutf.matchmaker.tests
 
 import io.javalin.json.JavalinJackson
 import io.javalin.json.toJsonString
@@ -6,7 +6,6 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.readutf.matchmaker.Application
-import org.readutf.matchmaker.matchmaker.extensions.toRequestBody
 import org.readutf.matchmaker.utils.ApiResult
 import org.testng.annotations.Test
 import java.nio.file.Files
@@ -15,8 +14,10 @@ import kotlin.test.assertEquals
 class MatchmakerApiUnitTests {
     private val testingPath = Files.createTempDirectory("matchmaker-test")
     private val javalinJackson: JavalinJackson = JavalinJackson()
-    private val objectMapper = javalinJackson.mapper
-    private val application = Application(testingPath).start()
+
+    init {
+        Application(testingPath).start("0.0.0.0", 7000)
+    }
 
     val okHttpClient =
         OkHttpClient
@@ -64,7 +65,7 @@ class MatchmakerApiUnitTests {
                 .Builder()
                 .put(
                     mapOf(
-                        "name" to "pgvector-test",
+                        "name" to "pgvector_test",
                         "minPoolSize" to 20,
                         "teamSize" to 1,
                         "numberOfTeams" to 2,
@@ -150,10 +151,10 @@ class MatchmakerApiUnitTests {
             Request
                 .Builder()
                 .delete()
-                .url("http://localhost:7000/api/matchmaker/pgvector-test")
+                .url("http://localhost:7000/api/matchmaker/pgvector_test")
 
         val response = okHttpClient.newCall(request.build()).execute()
-        val expectedBody = javalinJackson.toJsonString(ApiResult.success("Matchmaker 'pgvector-test' deleted"))
+        val expectedBody = javalinJackson.toJsonString(ApiResult.success("Matchmaker 'pgvector_test' deleted"))
 
         // assert response code
         // assert response body

@@ -6,6 +6,9 @@ import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.getOrThrow
 import org.readutf.matchmaker.matchmaker.Matchmaker
 import org.readutf.matchmaker.queue.store.QueueStore
+import java.util.concurrent.Executors
+import java.util.concurrent.ScheduledExecutorService
+import java.util.concurrent.TimeUnit
 
 class QueueManager(
     val queueStore: QueueStore,
@@ -17,6 +20,8 @@ class QueueManager(
             .associateBy { it.name }
             .toMutableMap()
 
+    private val queueExecutors = mutableMapOf<String, ScheduledExecutorService>()
+
     fun getQueue(queueName: String): Queue? = queues[queueName]
 
     fun createQueue(
@@ -27,6 +32,16 @@ class QueueManager(
 
         val queue = Queue(name, matchmaker)
         queues[name] = queue
+
+        val executor = Executors.newSingleThreadScheduledExecutor()
+        queueExecutors[name] = executor
+
+        queue.tickQueue()
+
+        executor.scheduleAtFixedRate({
+            queue.tickQueue()
+        }, 1, 1, TimeUnit.SECONDS)
+
         return Ok(queue)
     }
 

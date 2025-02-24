@@ -11,11 +11,19 @@ import org.readutf.matchmaker.matchmaker.MatchmakerCreator
 
 class FlexibleMatchmakerCreator : MatchmakerCreator {
     override fun createMatchmaker(jsonNode: JsonNode): Result<Matchmaker, Throwable> {
-        val name = jsonNode.get("name")?.asText() ?: return Err(Exception("Missing 'name' field"))
-        val targetTeamSize = jsonNode.get("targetTeamSize")?.asInt() ?: return Err(Exception("Missing 'targetTeamSize' field"))
-        val minTeamSize = jsonNode.get("minTeamSize")?.asInt() ?: return Err(Exception("Missing 'minTeamSize' field"))
-        val maxTeamSize = jsonNode.get("maxTeamSize")?.asInt() ?: return Err(Exception("Missing 'maxTeamSize' field"))
-        val numberOfTeams = jsonNode.get("numberOfTeams")?.asInt() ?: return Err(Exception("Missing 'numberOfTeams' field"))
+        val name =
+            (jsonNode.get("name") ?: return Err(Exception("Missing 'name' field"))).asText()
+        val targetTeamSize =
+            jsonNode.get("targetTeamSize")?.asInt()
+                ?: return Err(Exception("Missing 'targetTeamSize' field"))
+        val minTeamSize =
+            jsonNode.get("minTeamSize")?.asInt()
+                ?: return Err(Exception("Missing 'minTeamSize' field"))
+        val maxTeamSize =
+            jsonNode.get("maxTeamSize")?.asInt()
+                ?: return Err(Exception("Missing 'maxTeamSize' field"))
+        val numberOfTeams =
+            jsonNode.get("numberOfTeams")?.asInt() ?: return Err(Exception("Missing 'numberOfTeams' field"))
 
         return Ok(
             FlexibleMatchmaker(
@@ -29,7 +37,8 @@ class FlexibleMatchmakerCreator : MatchmakerCreator {
     }
 
     override fun serialize(matchmaker: Matchmaker): Result<JsonNode, Throwable> {
-        val matchmaker = matchmaker as? FlexibleMatchmaker ?: return Err(Exception("Matchmaker is not a FlexibleMatchmaker"))
+        val matchmaker =
+            matchmaker as? FlexibleMatchmaker ?: return Err(Exception("Matchmaker is not a FlexibleMatchmaker"))
 
         return runCatching {
             Application.objectMapper.valueToTree(

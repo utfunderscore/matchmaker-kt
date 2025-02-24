@@ -9,7 +9,7 @@ import org.readutf.matchmaker.queue.QueueManager
 import org.readutf.matchmaker.utils.failure
 import org.readutf.matchmaker.utils.success
 
-// /api/queue/{name}/create?type={type}
+// /api/queue/{name}?type={type}
 class QueueCreateEndpoint(
     val queueManager: QueueManager,
     val matchmakerManager: MatchmakerManager,

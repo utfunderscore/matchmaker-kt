@@ -1,5 +1,6 @@
 package org.readutf.matchmaker.queue
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
@@ -14,7 +15,7 @@ import java.util.UUID
  */
 open class Queue(
     val name: String,
-    val matchmaker: Matchmaker,
+    @JsonIgnore val matchmaker: Matchmaker,
 ) {
     /**
      * Stores the teams currently waiting to be matched
@@ -36,6 +37,11 @@ open class Queue(
 
         inQueue[team.teamId] = team
         return Ok(Unit)
+    }
+
+    @Synchronized
+    fun tickQueue() {
+        matchmaker.matchmake()
     }
 
     @Synchronized

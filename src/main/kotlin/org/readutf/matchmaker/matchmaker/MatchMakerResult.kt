@@ -4,11 +4,11 @@ import org.readutf.matchmaker.queue.QueueTeam
 
 sealed class MatchMakerResult {
     class MatchMakerSuccess(
-        result: List<List<QueueTeam>>,
+        val teams: List<List<QueueTeam>>,
     ) : MatchMakerResult()
 
     class MatchMakerFailure(
-        throwable: Throwable,
+        val err: Throwable,
     ) : MatchMakerResult()
 
     class MatchMakerSkip : MatchMakerResult()

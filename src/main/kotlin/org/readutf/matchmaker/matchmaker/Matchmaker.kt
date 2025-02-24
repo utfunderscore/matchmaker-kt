@@ -2,6 +2,7 @@ package org.readutf.matchmaker.matchmaker
 
 import com.github.michaelbull.result.Result
 import org.readutf.matchmaker.queue.QueueTeam
+import java.util.UUID
 
 /**
  * Implementations of the matchmaker class are responsible for taking the given set of teams,
@@ -23,5 +24,5 @@ abstract class Matchmaker(
 
     abstract fun addTeam(team: QueueTeam): Result<Unit, Throwable>
 
-    abstract fun removeTeam(team: QueueTeam): Result<Unit, Throwable>
+    abstract fun removeTeam(teamId: UUID): Result<Unit, Throwable>
 }

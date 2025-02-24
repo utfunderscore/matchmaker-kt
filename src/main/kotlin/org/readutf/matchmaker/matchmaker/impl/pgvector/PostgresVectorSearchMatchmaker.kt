@@ -19,7 +19,14 @@ class PostgresVectorSearchMatchmaker(
     hikariDataSource: HikariDataSource,
     val requiredStatistics: List<String>,
 ) : Matchmaker("pgvector", name) {
-    val postgresVersionDatabase =
+    init {
+        name
+            .matches(Regex("^[a-zA-Z0-9_]+$"))
+            .takeIf { it }
+            ?: throw IllegalArgumentException("Name must match regex ^[a-zA-Z0-9_]+$")
+    }
+
+    val postgresVersionDatabase: PostgresVectorDatabase =
         PostgresVectorDatabase(
             name = name,
             embeddingNames = requiredStatistics,
@@ -43,9 +50,9 @@ class PostgresVectorSearchMatchmaker(
         }
     }
 
-    override fun removeTeam(team: QueueTeam): Result<Unit, Throwable> =
-        postgresVersionDatabase.removeData(team.teamId).onSuccess {
-            joinOrder.remove(team.teamId)
+    override fun removeTeam(teamId: UUID): Result<Unit, Throwable> =
+        postgresVersionDatabase.removeData(teamId).onSuccess {
+            joinOrder.remove(teamId)
         }
 
     override fun matchmake(): MatchMakerResult {
@@ -54,7 +61,6 @@ class PostgresVectorSearchMatchmaker(
         }
 
         val firstJoined = joinOrder.firstEntry()
-        val teams = listOf<List<QueueTeam>>()
 
         val nearbyPlayers =
             postgresVersionDatabase
@@ -66,9 +72,9 @@ class PostgresVectorSearchMatchmaker(
                 }.map { listOf(it) }
 
         if (nearbyPlayers.size < numberOfTeams) {
-            return MatchMakerResult.MatchMakerSkip()
+            return MatchMakerResult.MatchMakerFailure(IllegalArgumentException("Database returned less than invalid number of teams"))
         }
 
-        return MatchMakerResult.MatchMakerSuccess(teams)
+        return MatchMakerResult.MatchMakerSuccess(nearbyPlayers)
     }
 }

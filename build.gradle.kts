@@ -51,6 +51,7 @@ dependencies {
      * Kotlin Result - Result type for Kotlin
      */
     implementation("com.michael-bull.kotlin-result:kotlin-result:2.0.1")
+    testImplementation("com.michael-bull.kotlin-result:kotlin-result:2.0.1")
 
     /**
      * HikariCP - High performance JDBC connection pool
@@ -79,9 +80,12 @@ tasks.test {
     useTestNG()
 
     testLogging {
-        events("passed", "skipped", "failed", "standardOut", "standardError")
-        showStandardStreams = true
+        showStandardStreams = true // Show standard output and error in console
+        exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL // Show full stack trace
+        events("passed", "skipped", "failed") // Log detailed test events
     }
+    // Ensures output is always shown
+    outputs.upToDateWhen { false }
 }
 
 tasks.test {

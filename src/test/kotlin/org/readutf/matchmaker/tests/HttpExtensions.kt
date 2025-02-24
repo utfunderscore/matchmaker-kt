@@ -1,4 +1,4 @@
-package org.readutf.matchmaker.matchmaker.extensions
+package org.readutf.matchmaker.tests
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import okhttp3.RequestBody

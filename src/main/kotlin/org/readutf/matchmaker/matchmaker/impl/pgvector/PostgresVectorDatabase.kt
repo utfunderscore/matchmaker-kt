@@ -13,6 +13,11 @@ class PostgresVectorDatabase(
     val embeddingNames: List<String>,
     val datasource: HikariDataSource,
 ) {
+    init {
+        createExtension()
+        createTable()
+    }
+
     fun getNearby(
         playerId: UUID,
         limit: Int,
@@ -40,7 +45,7 @@ class PostgresVectorDatabase(
         playerId: UUID,
         embeddingValues: Map<String, Double>,
     ): Result<Unit, Throwable> {
-        if (embeddingNames.none { embeddingValues.containsKey(it) } || embeddingValues.any { it.key !in embeddingNames }) {
+        if (embeddingNames.any { !embeddingValues.containsKey(it) } || embeddingValues.any { it.key !in embeddingNames }) {
             return Err(IllegalArgumentException("Embedding values must contain all embedding names"))
         }
 
@@ -49,6 +54,8 @@ class PostgresVectorDatabase(
                 val sql = "INSERT INTO $name (player_id, ${embeddingNames.joinToString(
                     ", ",
                 )}) VALUES ('$playerId', ${embeddingValues.values.joinToString(", ")})"
+
+                println(sql)
 
                 conn.prepareStatement(sql).use { statement ->
                     statement.executeUpdate()
