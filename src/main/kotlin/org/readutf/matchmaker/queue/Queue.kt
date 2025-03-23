@@ -5,8 +5,12 @@ import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.getOrElse
+import com.github.michaelbull.result.onFailure
+import io.github.oshai.kotlinlogging.KotlinLogging
+import org.readutf.matchmaker.matchmaker.MatchMakerResult
 import org.readutf.matchmaker.matchmaker.Matchmaker
 import java.util.UUID
+import java.util.function.Consumer
 
 /**
  * Represents a queue of teams waiting to be matched
@@ -17,13 +21,20 @@ open class Queue(
     val name: String,
     @JsonIgnore val matchmaker: Matchmaker,
 ) {
+    @JsonIgnore private val logger = KotlinLogging.logger { }
+
+    @JsonIgnore private val listeners = mutableMapOf<UUID, Consumer<List<List<QueueTeam>>>>()
+
     /**
      * Stores the teams currently waiting to be matched
      */
     private val inQueue: MutableMap<UUID, QueueTeam> = mutableMapOf()
 
     @Synchronized
-    fun addTeam(team: QueueTeam): Result<Unit, Throwable> {
+    fun addTeam(
+        team: QueueTeam,
+        callback: Consumer<List<List<QueueTeam>>>,
+    ): Result<Unit, Throwable> {
         // Check if the team is already in the queue
         if (inQueue.contains(team.teamId)) {
             return Err(Exception("Team is already in queue"))
@@ -36,12 +47,38 @@ open class Queue(
         matchmaker.addTeam(team).getOrElse { return Err(it) }
 
         inQueue[team.teamId] = team
+        listeners[team.teamId] = callback
+
         return Ok(Unit)
     }
 
     @Synchronized
     fun tickQueue() {
-        matchmaker.matchmake()
+        val matchmake = matchmaker.matchmake()
+        when (matchmake) {
+            is MatchMakerResult.MatchMakerFailure -> {
+                logger.error(matchmake.err) { "Matchmaker failure" }
+            }
+
+            is MatchMakerResult.MatchMakerSuccess -> {
+                val teams = matchmake.teams
+
+                val callback = listeners.values.distinct()
+
+                callback.forEach {
+                    it.accept(teams)
+                }
+
+                teams.flatten().forEach { team ->
+                    removeTeam(team).onFailure { err ->
+                        logger.error(err) { "Failed to remove team from queue" }
+                    }
+                }
+            }
+            else -> {
+                return
+            }
+        }
     }
 
     @Synchronized
@@ -51,6 +88,7 @@ open class Queue(
         }
 
         inQueue.remove(team.teamId)
+        listeners.remove(team.teamId)
         return Ok(Unit)
     }
 }

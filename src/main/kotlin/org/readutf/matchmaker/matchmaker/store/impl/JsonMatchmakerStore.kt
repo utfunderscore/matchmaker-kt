@@ -17,10 +17,10 @@ import org.readutf.matchmaker.matchmaker.store.MatchmakerStore
 import java.nio.file.Path
 
 class JsonMatchmakerStore(
-    jsonPath: Path,
+    directoryPath: Path,
 ) : MatchmakerStore {
     private val logger = KotlinLogging.logger { }
-    private val file = jsonPath.toFile()
+    private val file = directoryPath.toFile().resolve("matchmakers.json")
 
     init {
         file.parentFile.mkdirs()

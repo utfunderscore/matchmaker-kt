@@ -5,7 +5,12 @@ import io.javalin.json.toJsonString
 import io.javalin.testtools.DefaultTestConfig.okHttpClient
 import okhttp3.Request
 import org.readutf.matchmaker.Application
+import org.readutf.matchmaker.matchmaker.store.impl.JsonMatchmakerStore
+import org.readutf.matchmaker.queue.store.impl.JsonQueueStore
 import org.readutf.matchmaker.utils.ApiResult
+import org.testcontainers.containers.PostgreSQLContainer
+import org.testcontainers.utility.DockerImageName
+import org.testng.annotations.AfterTest
 import org.testng.annotations.BeforeTest
 import org.testng.annotations.Test
 import java.nio.file.Files
@@ -15,8 +20,26 @@ class QueueApiUnitTests {
     private val testingPath = Files.createTempDirectory("matchmaker-test")
     private val javalinJackson: JavalinJackson = JavalinJackson()
 
+    var postgres = PostgreSQLContainer(DockerImageName.parse("pgvector/pgvector:pg17"))
+
     init {
-        Application(testingPath).start("0.0.0.0", 7001)
+        postgres.start()
+
+        val jsonMatchmakerStore = JsonMatchmakerStore(testingPath)
+        val jsonQueueStore = JsonQueueStore(testingPath)
+
+        Application(
+            databaseUrl = postgres.jdbcUrl,
+            username = postgres.username,
+            password = postgres.password,
+            matchmakerStore = jsonMatchmakerStore,
+            queueStore = jsonQueueStore,
+        ).start("0.0.0.0", 7001)
+    }
+
+    @AfterTest
+    fun cleanup() {
+        postgres.stop()
     }
 
     @BeforeTest

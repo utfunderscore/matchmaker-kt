@@ -15,6 +15,7 @@ import org.readutf.matchmaker.matchmaker.impl.pgvector.VectorSearchCreator
 import org.readutf.matchmaker.queue.QueueTeam
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.utility.DockerImageName
+import org.testng.annotations.AfterTest
 import org.testng.annotations.BeforeClass
 import org.testng.annotations.Test
 import java.sql.SQLException
@@ -35,6 +36,11 @@ class VectorSearchMatchmakerTest {
     lateinit var dataSource: HikariDataSource
 
     val objectMapper = jacksonObjectMapper()
+
+    @AfterTest
+    fun cleanup() {
+        postgres.stop()
+    }
 
     @BeforeClass
     fun setup() {

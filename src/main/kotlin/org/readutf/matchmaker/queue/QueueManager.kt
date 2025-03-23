@@ -5,20 +5,17 @@ import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.getOrThrow
 import org.readutf.matchmaker.matchmaker.Matchmaker
+import org.readutf.matchmaker.matchmaker.MatchmakerManager
 import org.readutf.matchmaker.queue.store.QueueStore
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
+import java.util.function.Consumer
 
 class QueueManager(
     val queueStore: QueueStore,
 ) {
-    private val queues =
-        queueStore
-            .loadQueues()
-            .getOrThrow()
-            .associateBy { it.name }
-            .toMutableMap()
+    private val queues: MutableMap<String, Queue> = mutableMapOf<String, Queue>()
 
     private val queueExecutors = mutableMapOf<String, ScheduledExecutorService>()
 
@@ -31,18 +28,21 @@ class QueueManager(
         if (queues.containsKey(name)) return Err(Exception("Queue already exists"))
 
         val queue = Queue(name, matchmaker)
-        queues[name] = queue
-
-        val executor = Executors.newSingleThreadScheduledExecutor()
-        queueExecutors[name] = executor
-
-        queue.tickQueue()
-
-        executor.scheduleAtFixedRate({
-            queue.tickQueue()
-        }, 1, 1, TimeUnit.SECONDS)
+        registerQueue(queue)
 
         return Ok(queue)
+    }
+
+    private fun registerQueue(queue: Queue) {
+        queues[queue.name] = queue
+
+        val executor = Executors.newSingleThreadScheduledExecutor()
+        queueExecutors[queue.name] = executor
+
+        executor.scheduleAtFixedRate({
+            println("Ticking queue ${queue.name}")
+            queue.tickQueue()
+        }, 0, 1, TimeUnit.SECONDS)
     }
 
     /**
@@ -53,9 +53,11 @@ class QueueManager(
     fun joinQueue(
         queueName: String,
         team: QueueTeam,
+        callback: Consumer<List<List<QueueTeam>>>,
     ): Result<Unit, Throwable> {
         val queue = queues[queueName] ?: return Err(Exception("Queue does not exist"))
-        return queue.addTeam(team)
+
+        return queue.addTeam(team, callback)
     }
 
     /**
@@ -67,6 +69,12 @@ class QueueManager(
     ): Result<Unit, Throwable> {
         val queue = queues[queueName] ?: return Err(Exception("Queue does not exist"))
         return queue.removeTeam(team)
+    }
+
+    fun loadQueues(matchmakerManager: MatchmakerManager) {
+        for (queue in queueStore.loadQueues(matchmakerManager).getOrThrow()) {
+            registerQueue(queue)
+        }
     }
 
     fun getQueues(): List<Queue> = queues.values.toList()

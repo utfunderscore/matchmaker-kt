@@ -26,16 +26,12 @@ dependencies {
      */
     implementation("org.tinylog:tinylog-api:2.7.0")
     implementation("org.tinylog:tinylog-impl:2.7.0")
+    implementation("org.tinylog:slf4j-tinylog:2.7.0")
 
     /**
      * Kotlin logging - Logging library for Kotlin
      */
     implementation("io.github.oshai:kotlin-logging-jvm:7.0.3")
-
-    /**
-     * SLF4J binding for tinylog 2
-     */
-    implementation("org.tinylog:slf4j-tinylog:2.7.0")
 
     /**
      * Jackson - JSON library
