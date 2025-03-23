@@ -11,26 +11,27 @@ import java.nio.file.Path
 
 class JsonQueueStore(
     private val filePath: Path,
-    private val matchmakerManager: MatchmakerManager,
 ) : QueueStore {
     private val logger = KotlinLogging.logger { }
 
-    private val file = filePath.toFile()
+    private val file = filePath.toFile().resolve("queues.json")
 
     init {
         if (!(file.exists())) file.createNewFile()
     }
 
     override fun saveQueues(queues: List<Queue>): Result<Unit, Throwable> {
-        objectMapper.writeValue(filePath.toFile().bufferedWriter(), queues.map { QueueData(it.name, it.matchmaker.name) })
+        objectMapper.writeValue(file.bufferedWriter(), queues.map { QueueData(it.name, it.matchmaker.name) })
         return Ok(Unit)
     }
 
-    override fun loadQueues(): Result<List<Queue>, Throwable> {
+    override fun loadQueues(matchmakerManager: MatchmakerManager): Result<List<Queue>, Throwable> {
         val queues = mutableListOf<Queue>()
 
-        objectMapper.readTree(filePath.toFile()).forEach {
+        objectMapper.readTree(file).forEach {
             try {
+                print(it)
+
                 val queueData = objectMapper.readValue(it.toString(), QueueData::class.java)
                 val matchmaker =
                     matchmakerManager.getMatchmaker(queueData.matchmaker) ?: let {
@@ -43,6 +44,7 @@ class JsonQueueStore(
             }
         }
 
+        logger.info { "Loaded ${queues.size} queues" }
         return Ok(queues)
     }
 
