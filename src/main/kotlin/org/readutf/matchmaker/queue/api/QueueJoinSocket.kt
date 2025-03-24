@@ -4,6 +4,7 @@ import com.github.michaelbull.result.onFailure
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.javalin.websocket.WsCloseContext
 import io.javalin.websocket.WsConfig
+import io.javalin.websocket.WsConnectContext
 import io.javalin.websocket.WsMessageContext
 import org.readutf.matchmaker.queue.QueueManager
 import org.readutf.matchmaker.queue.QueueTeam
@@ -18,11 +19,14 @@ class QueueJoinSocket(
     private val idToEntry = mutableMapOf<String, QueueTeam>()
 
     override fun accept(wsConfig: WsConfig) {
-        wsConfig.onMessage { ctx ->
-            onMessage(ctx)
-        }
+        wsConfig.onConnect(::onConnect)
+        wsConfig.onMessage(::onMessage)
+        wsConfig.onClose(::onClose)
+        wsConfig.onError { it.error()?.printStackTrace() }
+    }
 
-        wsConfig.onError { it.closeSession() }
+    fun onConnect(ctx: WsConnectContext) {
+        val queue = ctx.pathParam("name")
     }
 
     fun onMessage(ctx: WsMessageContext) {
@@ -43,9 +47,7 @@ class QueueJoinSocket(
         val queue = ctx.pathParam("name")
         val team = idToEntry[queue]
         if (team != null) {
-            queueManager.leaveQueue(queue, team).onFailure {
-                logger.error(it) { "Failed to leave queue" }
-            }
+            queueManager.leaveQueue(queue, team)
         } else {
             ctx.sendAsClass(ApiResult.failure("Failed to leave queue"))
         }
