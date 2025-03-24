@@ -24,21 +24,25 @@ class QueueApiUnitTests {
 
     init {
         postgres.start()
+    }
 
-        val jsonMatchmakerStore = JsonMatchmakerStore(testingPath)
-        val jsonQueueStore = JsonQueueStore(testingPath)
+    val jsonMatchmakerStore = JsonMatchmakerStore(testingPath)
+    val jsonQueueStore = JsonQueueStore(testingPath)
 
+    val app =
         Application(
             databaseUrl = postgres.jdbcUrl,
             username = postgres.username,
             password = postgres.password,
             matchmakerStore = jsonMatchmakerStore,
             queueStore = jsonQueueStore,
-        ).start("0.0.0.0", 7001)
-    }
+        ).also {
+            it.start("0.0.0.0", 7001)
+        }
 
     @AfterTest
     fun cleanup() {
+        app.shutdown()
         postgres.stop()
     }
 

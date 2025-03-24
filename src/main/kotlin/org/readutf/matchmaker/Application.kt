@@ -41,6 +41,7 @@ class Application(
 ) {
     private val logger = KotlinLogging.logger { }
 
+    private var running = true
     private val gameProvider: GameProvider = PseudoGameProvider()
     private val matchmakerManager = MatchmakerManager(matchmakerStore)
     private val queueManager = QueueManager(queueStore)
@@ -83,10 +84,16 @@ class Application(
 
         Runtime.getRuntime().addShutdownHook(
             Thread {
-                queueManager.shutdown()
-                matchmakerManager.shutdown()
+                shutdown()
             },
         )
+    }
+
+    fun shutdown() {
+        if (!running) return
+        queueManager.shutdown()
+        matchmakerManager.shutdown()
+        running = false
     }
 
     fun start(

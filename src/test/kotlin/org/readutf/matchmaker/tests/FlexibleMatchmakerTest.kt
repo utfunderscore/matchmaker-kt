@@ -236,9 +236,9 @@ class FlexibleMatchmakerTest {
         val jsonNode =
             objectMapper.valueToTree<JsonNode>(emptyMap<String, String>())
 
-        matchmaker.addTeam(QueueTeam(UUID.randomUUID(), List(4) { UUID.randomUUID() }, jsonNode))
+        matchmaker.addTeam(QueueTeam(UUID.randomUUID(), "", List(4) { UUID.randomUUID() }, jsonNode))
 
-        matchmaker.addTeam(QueueTeam(UUID.randomUUID(), List(4) { UUID.randomUUID() }, jsonNode))
+        matchmaker.addTeam(QueueTeam(UUID.randomUUID(), "", List(4) { UUID.randomUUID() }, jsonNode))
 
         assertTrue { matchmaker.matchmake() is MatchMakerResult.MatchMakerSkip }
     }
@@ -257,9 +257,9 @@ class FlexibleMatchmakerTest {
         val jsonNode =
             objectMapper.valueToTree<JsonNode>(emptyMap<String, String>())
 
-        matchmaker.addTeam(QueueTeam(UUID.randomUUID(), listOf(UUID.randomUUID()), jsonNode))
+        matchmaker.addTeam(QueueTeam(UUID.randomUUID(), "", listOf(UUID.randomUUID()), jsonNode))
 
-        matchmaker.addTeam(QueueTeam(UUID.randomUUID(), listOf(UUID.randomUUID()), jsonNode))
+        matchmaker.addTeam(QueueTeam(UUID.randomUUID(), "", listOf(UUID.randomUUID()), jsonNode))
 
         val matchmakeResult = matchmaker.matchmake()
 
