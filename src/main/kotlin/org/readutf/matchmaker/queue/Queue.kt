@@ -87,6 +87,7 @@ open class Queue(
             return Err(Exception("Team is not in queue"))
         }
 
+        matchmaker.removeTeam(team.teamId)
         inQueue.remove(team.teamId)
         listeners.remove(team.teamId)
         return Ok(Unit)
