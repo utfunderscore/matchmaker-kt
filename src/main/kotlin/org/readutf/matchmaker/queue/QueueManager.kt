@@ -79,6 +79,7 @@ class QueueManager(
     fun getQueues(): List<Queue> = queues.values.toList()
 
     fun shutdown() {
+        queues.values.forEach(Queue::shutdown)
         queueStore.saveQueues(queues.values.toList()).getOrThrow()
     }
 

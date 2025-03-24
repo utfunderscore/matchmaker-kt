@@ -92,4 +92,8 @@ open class Queue(
         listeners.remove(team.teamId)
         return Ok(Unit)
     }
+
+    fun shutdown() {
+        matchmaker.shutdown()
+    }
 }

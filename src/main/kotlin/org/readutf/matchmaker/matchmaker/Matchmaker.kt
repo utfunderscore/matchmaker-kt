@@ -25,4 +25,6 @@ abstract class Matchmaker(
     abstract fun addTeam(team: QueueTeam): Result<Unit, Throwable>
 
     abstract fun removeTeam(teamId: UUID): Result<Unit, Throwable>
+
+    open fun shutdown() {}
 }
