@@ -33,6 +33,11 @@ class PostgresVectorSearchMatchmaker(
             datasource = hikariDataSource,
         )
 
+    init {
+        postgresVersionDatabase.dropTable()
+        postgresVersionDatabase.init()
+    }
+
     val joinOrder = LinkedHashMap<UUID, QueueTeam>()
 
     override fun addTeam(team: QueueTeam): Result<Unit, Throwable> {
@@ -76,5 +81,9 @@ class PostgresVectorSearchMatchmaker(
         }
 
         return MatchMakerResult.MatchMakerSuccess(nearbyPlayers)
+    }
+
+    override fun shutdown() {
+        postgresVersionDatabase.dropTable()
     }
 }

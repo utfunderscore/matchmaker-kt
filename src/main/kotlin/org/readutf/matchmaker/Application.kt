@@ -106,26 +106,30 @@ fun main() {
     println(
         objectMapper.writeValueAsString(
             QueueTeam(
-                UUID.randomUUID(),
-                listOf(UUID.randomUUID()),
-                objectMapper.valueToTree<JsonNode>(
-                    mapOf(
-                        "kdr" to 1.0,
+                teamId = UUID.randomUUID(),
+                socketId = "",
+                players = listOf(UUID.randomUUID()),
+                attributes =
+                    objectMapper.valueToTree<JsonNode>(
+                        mapOf(
+                            "kdr" to 1.0,
+                        ),
                     ),
-                ),
             ),
         ),
     )
     println(
         objectMapper.writeValueAsString(
             QueueTeam(
-                UUID.randomUUID(),
-                listOf(UUID.randomUUID()),
-                objectMapper.valueToTree<JsonNode>(
-                    mapOf(
-                        "kdr" to 1.0,
+                teamId = UUID.randomUUID(),
+                socketId = "",
+                players = listOf(UUID.randomUUID()),
+                attributes =
+                    objectMapper.valueToTree<JsonNode>(
+                        mapOf(
+                            "kdr" to 1.0,
+                        ),
                     ),
-                ),
             ),
         ),
     )

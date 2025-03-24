@@ -13,7 +13,7 @@ class PostgresVectorDatabase(
     val embeddingNames: List<String>,
     val datasource: HikariDataSource,
 ) {
-    init {
+    fun init() {
         createExtension()
         createTable()
     }
@@ -104,10 +104,19 @@ class PostgresVectorDatabase(
         return Ok(Unit)
     }
 
-    private fun getConnection() = datasource.connection
+    fun dropTable() {
+        getConnection().use { conn ->
+            val sql = "DROP TABLE IF EXISTS $name;"
+            conn.prepareStatement(sql).use { statement ->
+                statement.executeUpdate()
+            }
+        }
+    }
 
     fun createTableStatement(): String {
         val embeddingPart = embeddingNames.joinToString(", ") { "$it FLOAT NOT NULL" }
         return "CREATE TABLE $name (player_id uuid PRIMARY KEY, $embeddingPart, embeddings vector(${embeddingNames.size}));"
     }
+
+    private fun getConnection() = datasource.connection
 }

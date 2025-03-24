@@ -5,6 +5,7 @@ import java.util.UUID
 
 data class QueueTeam(
     val teamId: UUID,
+    var socketId: String,
     val players: List<UUID>,
     val attributes: JsonNode,
 )

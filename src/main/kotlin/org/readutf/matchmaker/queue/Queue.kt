@@ -23,7 +23,7 @@ open class Queue(
 ) {
     @JsonIgnore private val logger = KotlinLogging.logger { }
 
-    @JsonIgnore private val listeners = mutableMapOf<UUID, Consumer<List<List<QueueTeam>>>>()
+    @JsonIgnore private val listeners = mutableMapOf<String, Consumer<List<List<QueueTeam>>>>()
 
     /**
      * Stores the teams currently waiting to be matched
@@ -47,9 +47,15 @@ open class Queue(
         matchmaker.addTeam(team).getOrElse { return Err(it) }
 
         inQueue[team.teamId] = team
-        listeners[team.teamId] = callback
+        listeners[team.socketId] = callback
 
         return Ok(Unit)
+    }
+
+    fun subscribe(
+        contextId: String,
+        teamId: UUID,
+    ) {
     }
 
     @Synchronized
@@ -63,11 +69,9 @@ open class Queue(
             is MatchMakerResult.MatchMakerSuccess -> {
                 val teams = matchmake.teams
 
-                val callback = listeners.values.distinct()
+                val involvedSockets = teams.flatten().map { team -> team.socketId }.distinct()
 
-                callback.forEach {
-                    it.accept(teams)
-                }
+                involvedSockets.mapNotNull { listeners[it] }.forEach { listener -> listener.accept(teams) }
 
                 teams.flatten().forEach { team ->
                     removeTeam(team).onFailure { err ->
@@ -89,7 +93,7 @@ open class Queue(
 
         matchmaker.removeTeam(team.teamId)
         inQueue.remove(team.teamId)
-        listeners.remove(team.teamId)
+        listeners.remove(team.socketId)
         return Ok(Unit)
     }
 
