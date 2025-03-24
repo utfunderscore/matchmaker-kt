@@ -74,14 +74,6 @@ dependencies {
 
 tasks.test {
     useTestNG()
-
-    testLogging {
-        showStandardStreams = true // Show standard output and error in console
-        exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL // Show full stack trace
-        events("passed", "skipped", "failed") // Log detailed test events
-    }
-    // Ensures output is always shown
-    outputs.upToDateWhen { false }
 }
 
 tasks.test {
