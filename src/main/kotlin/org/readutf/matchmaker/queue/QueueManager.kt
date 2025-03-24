@@ -40,7 +40,6 @@ class QueueManager(
         queueExecutors[queue.name] = executor
 
         executor.scheduleAtFixedRate({
-            println("Ticking queue ${queue.name}")
             queue.tickQueue()
         }, 0, 1, TimeUnit.SECONDS)
     }
