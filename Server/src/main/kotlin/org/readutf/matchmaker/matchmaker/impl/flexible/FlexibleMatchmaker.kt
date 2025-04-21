@@ -26,7 +26,7 @@ class FlexibleMatchmaker(
         val totalPlayers = teams.sumOf { it.players.size }
 
         if (totalPlayers < targetTeamSize * numberOfTeams) {
-            return MatchMakerResult.MatchMakerSkip()
+            return MatchMakerResult.MatchMakerSkip
         }
         val teamsBySize = teams.groupBy { it.players.size }.map { (size, teams) -> size to ArrayDeque(teams) }.toMap()
 
@@ -39,7 +39,7 @@ class FlexibleMatchmaker(
                 }
 
             if (teamComposition == null) {
-                return MatchMakerResult.MatchMakerSkip()
+                return MatchMakerResult.MatchMakerSkip
             }
 
             results.add(teamComposition.map { teamSize -> teamsBySize[teamSize]!!.first() })

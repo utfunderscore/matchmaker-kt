@@ -11,5 +11,5 @@ sealed class MatchMakerResult {
         val err: Throwable,
     ) : MatchMakerResult()
 
-    class MatchMakerSkip : MatchMakerResult()
+    data object MatchMakerSkip : MatchMakerResult()
 }
