@@ -58,6 +58,12 @@ dependencies {
      * PostgreSQL JDBC driver
      */
     implementation("org.postgresql:postgresql:42.7.5")
+
+    /**
+     * Kafka messaging library
+     */
+    implementation("org.apache.kafka:kafka-clients:4.0.0")
+
     /**
      * Testcontainers - Create docker containers for needed dependencies during test runtime
      */
