@@ -1,6 +1,8 @@
 package org.readutf.matchmaker.queue
 
 import com.fasterxml.jackson.annotation.JsonIgnore
+import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.annotation.JsonValue
 import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
@@ -98,5 +100,13 @@ open class Queue(
 
     fun shutdown() {
         matchmaker.shutdown()
+    }
+
+    @JsonProperty("teams")
+    fun getTeams() = inQueue.values.toList()
+
+    @JsonProperty("matchmaker")
+    fun getMatchmakerInfo(): Map<String, String> {
+        return mapOf("name" to matchmaker.name, "type" to matchmaker.type)
     }
 }
