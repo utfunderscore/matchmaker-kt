@@ -83,6 +83,7 @@ class VectorSearchMatchmakerTest {
                 QueueTeam(
                     teamId = UUID.randomUUID(),
                     players = listOf(UUID.randomUUID()),
+                    socketId = "",
                     attributes = objectMapper.valueToTree(mapOf("kdr" to 1.0, "elo" to 1.0)),
                 ),
             )
@@ -99,6 +100,7 @@ class VectorSearchMatchmakerTest {
                 QueueTeam(
                     teamId = UUID.randomUUID(),
                     players = listOf(UUID.randomUUID(), UUID.randomUUID()),
+                    socketId = "",
                     attributes = objectMapper.valueToTree(emptyMap<String, String>()),
                 ),
             )
@@ -115,6 +117,7 @@ class VectorSearchMatchmakerTest {
                 QueueTeam(
                     teamId = UUID.randomUUID(),
                     players = listOf(UUID.randomUUID(), UUID.randomUUID()),
+                    socketId = "",
                     attributes = objectMapper.valueToTree(mapOf("kdr" to 1.0, "elo" to 1.0)),
                 ),
             )
@@ -134,6 +137,7 @@ class VectorSearchMatchmakerTest {
                     QueueTeam(
                         teamId = teamId,
                         players = listOf(UUID.randomUUID(), UUID.randomUUID()),
+                        socketId = "",
                         attributes = objectMapper.valueToTree(mapOf("kdr" to 1.0, "elo" to 1.0)),
                     ),
                 )
@@ -157,6 +161,7 @@ class VectorSearchMatchmakerTest {
                     QueueTeam(
                         teamId = teamId,
                         players = listOf(UUID.randomUUID(), UUID.randomUUID()),
+                        socketId = "",
                         attributes = objectMapper.valueToTree(mapOf("kdr" to 1.0, "elo" to 1.0)),
                     ),
                 )
@@ -188,6 +193,7 @@ class VectorSearchMatchmakerTest {
             QueueTeam(
                 teamId = teamId,
                 players = team1Players,
+                socketId = "",
                 attributes = objectMapper.valueToTree(mapOf("kdr" to 1.0, "elo" to 1.0)),
             )
 
@@ -202,6 +208,7 @@ class VectorSearchMatchmakerTest {
             QueueTeam(
                 teamId = teamId2,
                 players = team2Players,
+                socketId = "",
                 attributes = objectMapper.valueToTree(mapOf("kdr" to 1.0, "elo" to 1.0)),
             )
         val addTeamResult2 = matchmaker.addTeam(team2)
@@ -228,6 +235,7 @@ class VectorSearchMatchmakerTest {
             QueueTeam(
                 teamId = teamId,
                 players = team1Players,
+                socketId = "",
                 attributes = objectMapper.valueToTree(mapOf("kdr" to 1.0, "elo" to 1.0)),
             )
 
@@ -242,6 +250,7 @@ class VectorSearchMatchmakerTest {
             QueueTeam(
                 teamId = teamId2,
                 players = team2Players,
+                socketId = "",
                 attributes = objectMapper.valueToTree(mapOf("kdr" to 1.0, "elo" to 1.0)),
             )
         val addTeamResult2 = matchmaker.addTeam(team2)

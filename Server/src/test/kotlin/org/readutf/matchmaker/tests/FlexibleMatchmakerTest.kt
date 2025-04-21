@@ -16,6 +16,17 @@ class FlexibleMatchmakerTest {
     val objectMapper = jacksonObjectMapper()
 
     @Test
+    fun `shutdown matchmaker`() {
+        FlexibleMatchmaker(
+            name = "flexible-test",
+            targetTeamSize = 1,
+            minTeamSize = 1,
+            maxTeamSize = 4,
+            numberOfTeams = 2,
+        ).shutdown()
+    }
+
+    @Test
     fun `create flexible matchmaker all values present`() {
         val creator = FlexibleMatchmakerCreator()
 
