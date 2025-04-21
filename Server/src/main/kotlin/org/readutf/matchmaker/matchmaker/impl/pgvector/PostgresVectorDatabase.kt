@@ -25,7 +25,8 @@ class PostgresVectorDatabase(
         val result =
             getConnection().use { conn ->
                 val sql =
-                    "SELECT player_id, embeddings <-> (SELECT embeddings FROM $name WHERE player_id = '$playerId') AS distance FROM $name ORDER BY distance LIMIT $limit;"
+                    "SELECT player_id, embeddings <-> (SELECT embeddings FROM $name WHERE player_id = '$playerId') " +
+                        "AS distance FROM $name ORDER BY distance LIMIT $limit;"
                 val result = mutableListOf<UUID>()
 
                 conn.prepareStatement(sql).use { statement ->

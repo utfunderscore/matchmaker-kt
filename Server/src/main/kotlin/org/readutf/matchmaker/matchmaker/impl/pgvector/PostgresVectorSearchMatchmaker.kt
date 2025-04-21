@@ -38,7 +38,7 @@ class PostgresVectorSearchMatchmaker(
         postgresVersionDatabase.init()
     }
 
-    val joinOrder = LinkedHashMap<UUID, QueueTeam>()
+    private val joinOrder = LinkedHashMap<UUID, QueueTeam>()
 
     override fun addTeam(team: QueueTeam): Result<Unit, Throwable> {
         if (team.players.size != teamSize) {
@@ -51,7 +51,7 @@ class PostgresVectorSearchMatchmaker(
         val embeddings = requiredStatistics.associateWith { team.attributes[it]?.doubleValue() ?: 0.0 }
 
         return postgresVersionDatabase.insertData(team.teamId, embeddings).onSuccess {
-            joinOrder.put(team.teamId, team)
+            joinOrder[team.teamId] = team
         }
     }
 
@@ -62,7 +62,7 @@ class PostgresVectorSearchMatchmaker(
 
     override fun matchmake(): MatchMakerResult {
         if (joinOrder.size < numberOfTeams || joinOrder.isEmpty()) {
-            return MatchMakerResult.MatchMakerSkip()
+            return MatchMakerResult.MatchMakerSkip
         }
 
         val firstJoined = joinOrder.firstEntry()
