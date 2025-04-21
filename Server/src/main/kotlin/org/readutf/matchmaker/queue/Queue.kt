@@ -60,14 +60,13 @@ open class Queue(
 
     @Synchronized
     fun tickQueue() {
-        val matchmake = matchmaker.matchmake()
-        when (matchmake) {
+        when (val result = matchmaker.matchmake()) {
             is MatchMakerResult.MatchMakerFailure -> {
-                logger.error(matchmake.err) { "Matchmaker failure" }
+                logger.error(result.err) { "Matchmaker failure" }
             }
 
             is MatchMakerResult.MatchMakerSuccess -> {
-                val teams = matchmake.teams
+                val teams = result.teams
 
                 val involvedSockets = teams.flatten().map { team -> team.socketId }.distinct()
 
