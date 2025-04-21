@@ -33,6 +33,8 @@ class QueueJoinSocket(
         val queue = ctx.pathParam("name")
         val team = ctx.messageAsClass<QueueTeam>()
 
+        team.socketId = ctx.sessionId()
+
         idToEntry[queue] = team
         queueManager
             .joinQueue(queue, team) {
