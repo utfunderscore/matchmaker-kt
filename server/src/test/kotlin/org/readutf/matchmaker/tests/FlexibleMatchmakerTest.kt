@@ -8,12 +8,12 @@ import org.readutf.matchmaker.matchmaker.Matchmaker
 import org.readutf.matchmaker.matchmaker.impl.flexible.FlexibleMatchmaker
 import org.readutf.matchmaker.matchmaker.impl.flexible.FlexibleMatchmakerCreator
 import org.readutf.matchmaker.queue.QueueTeam
-import org.testng.annotations.Test
 import java.util.UUID
+import kotlin.test.Test
 import kotlin.test.assertTrue
 
 class FlexibleMatchmakerTest {
-    val objectMapper = jacksonObjectMapper()
+    private val objectMapper = jacksonObjectMapper()
 
     @Test
     fun `shutdown matchmaker`() {
@@ -32,7 +32,7 @@ class FlexibleMatchmakerTest {
 
         assertTrue {
             creator
-                .createMatchmaker(
+                .deserialize(
                     objectMapper.valueToTree<JsonNode>(
                         mapOf(
                             "name" to "test",
@@ -52,7 +52,7 @@ class FlexibleMatchmakerTest {
 
         assertTrue {
             creator
-                .createMatchmaker(
+                .deserialize(
                     objectMapper.valueToTree<JsonNode>(
                         mapOf(
                             "targetTeamSize" to 5,
@@ -71,7 +71,7 @@ class FlexibleMatchmakerTest {
 
         assertTrue {
             creator
-                .createMatchmaker(
+                .deserialize(
                     objectMapper.valueToTree<JsonNode>(
                         mapOf(
                             "name" to "test",
@@ -90,7 +90,7 @@ class FlexibleMatchmakerTest {
 
         assertTrue {
             creator
-                .createMatchmaker(
+                .deserialize(
                     objectMapper.valueToTree<JsonNode>(
                         mapOf(
                             "name" to "test",
@@ -109,7 +109,7 @@ class FlexibleMatchmakerTest {
 
         assertTrue {
             creator
-                .createMatchmaker(
+                .deserialize(
                     objectMapper.valueToTree<JsonNode>(
                         mapOf(
                             "name" to "test",
@@ -128,7 +128,7 @@ class FlexibleMatchmakerTest {
 
         assertTrue {
             creator
-                .createMatchmaker(
+                .deserialize(
                     objectMapper.valueToTree<JsonNode>(
                         mapOf(
                             "name" to "test",
@@ -145,7 +145,7 @@ class FlexibleMatchmakerTest {
     fun `test flexible matchmaker serialization`() {
         val creator = FlexibleMatchmakerCreator()
         val matchmaker =
-            creator.createMatchmaker(
+            creator.deserialize(
                 objectMapper.valueToTree<JsonNode>(
                     mapOf(
                         "name" to "test",
@@ -186,12 +186,11 @@ class FlexibleMatchmakerTest {
         }
     }
 
-    @Test(dependsOnMethods = ["test flexible matchmaker serialization"])
     fun `test flexible matchmaker deserialization`() {
         val creator = FlexibleMatchmakerCreator()
         val matchmaker =
-            creator.createMatchmaker(
-                objectMapper.valueToTree<JsonNode>(
+            creator.deserialize(
+                objectMapper.valueToTree(
                     mapOf(
                         "name" to "test",
                         "targetTeamSize" to 5,
@@ -247,7 +246,13 @@ class FlexibleMatchmakerTest {
         val jsonNode =
             objectMapper.valueToTree<JsonNode>(emptyMap<String, String>())
 
-        matchmaker.addTeam(QueueTeam(UUID.randomUUID(), "", List(4) { UUID.randomUUID() }, jsonNode))
+        matchmaker.addTeam(
+            QueueTeam(
+                teamId = UUID.randomUUID(),
+                players = List(4) { UUID.randomUUID() },
+                attributes = jsonNode,
+            ),
+        )
 
         matchmaker.addTeam(QueueTeam(UUID.randomUUID(), "", List(4) { UUID.randomUUID() }, jsonNode))
 
@@ -268,9 +273,21 @@ class FlexibleMatchmakerTest {
         val jsonNode =
             objectMapper.valueToTree<JsonNode>(emptyMap<String, String>())
 
-        matchmaker.addTeam(QueueTeam(UUID.randomUUID(), "", listOf(UUID.randomUUID()), jsonNode))
+        matchmaker.addTeam(
+            QueueTeam(
+                teamId = UUID.randomUUID(),
+                players = listOf(UUID.randomUUID()),
+                attributes = jsonNode,
+            ),
+        )
 
-        matchmaker.addTeam(QueueTeam(UUID.randomUUID(), "", listOf(UUID.randomUUID()), jsonNode))
+        matchmaker.addTeam(
+            QueueTeam(
+                teamId = UUID.randomUUID(),
+                players = listOf(UUID.randomUUID()),
+                attributes = jsonNode,
+            ),
+        )
 
         val matchmakeResult = matchmaker.matchmake()
 

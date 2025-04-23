@@ -10,8 +10,8 @@ import kotlin.math.abs
 
 class EloMatchmaker(
     name: String,
-    private val rangeExpansionAmount: Int,
-    private val rangeExpansionTime: Long,
+    val rangeExpansionAmount: Int,
+    val rangeExpansionTime: Long,
 ) : PooledMatchmaker("pooled_elo", name) {
     override fun matchmake(teams: List<QueueTeam>): MatchMakerResult {
         val ranges = teams.map { team -> getRange(team) }

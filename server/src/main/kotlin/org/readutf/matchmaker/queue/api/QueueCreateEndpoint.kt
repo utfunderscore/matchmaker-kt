@@ -11,11 +11,11 @@ import org.readutf.matchmaker.utils.success
 
 // /api/queue/{name}?matchmaker={type}
 class QueueCreateEndpoint(
-    val queueManager: QueueManager,
-    val matchmakerManager: MatchmakerManager,
+    private val queueManager: QueueManager,
+    private val matchmakerManager: MatchmakerManager,
 ) : Handler {
     override fun handle(ctx: Context) {
-        val matchmakerType =
+        val matchmakerName =
             ctx.queryParam("matchmaker") ?: let {
                 ctx.failure("Matchmaker type not specified")
                 return
@@ -23,7 +23,7 @@ class QueueCreateEndpoint(
         val queueName = ctx.pathParam("name")
 
         val matchmaker =
-            matchmakerManager.getMatchmaker(matchmakerType) ?: let {
+            matchmakerManager.getMatchmaker(matchmakerName) ?: let {
                 ctx.failure("Matchmaker type not found")
                 return
             }
@@ -31,7 +31,7 @@ class QueueCreateEndpoint(
         queueManager
             .createQueue(queueName, matchmaker)
             .onFailure { err ->
-                ctx.failure(err.message ?: "An error occurred")
+                ctx.failure(err.message)
             }.onSuccess { queue ->
                 ctx.success(queue)
             }

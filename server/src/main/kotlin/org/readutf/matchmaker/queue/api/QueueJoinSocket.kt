@@ -1,14 +1,19 @@
 package org.readutf.matchmaker.queue.api
 
+import com.fasterxml.jackson.core.type.TypeReference
+import com.fasterxml.jackson.databind.JsonNode
 import com.github.michaelbull.result.onFailure
+import com.github.michaelbull.result.onSuccess
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.javalin.websocket.WsCloseContext
 import io.javalin.websocket.WsConfig
-import io.javalin.websocket.WsConnectContext
 import io.javalin.websocket.WsMessageContext
+import org.readutf.matchmaker.Application
 import org.readutf.matchmaker.queue.QueueManager
 import org.readutf.matchmaker.queue.QueueTeam
 import org.readutf.matchmaker.utils.ApiResult
+import org.readutf.matchmaker.utils.containsAllKeys
+import java.util.UUID
 import java.util.function.Consumer
 
 // /api/queue/{name}
@@ -16,38 +21,55 @@ class QueueJoinSocket(
     private val queueManager: QueueManager,
 ) : Consumer<WsConfig> {
     private val logger = KotlinLogging.logger { }
-    private val idToEntry = mutableMapOf<String, QueueTeam>()
+    private val sessionToTeam = mutableMapOf<String, QueueTeam>()
 
     override fun accept(wsConfig: WsConfig) {
-        wsConfig.onConnect(::onConnect)
         wsConfig.onMessage(::onMessage)
         wsConfig.onClose(::onClose)
-        wsConfig.onError { it.error()?.printStackTrace() }
-    }
-
-    fun onConnect(ctx: WsConnectContext) {
-        val queue = ctx.pathParam("name")
     }
 
     fun onMessage(ctx: WsMessageContext) {
         val queue = ctx.pathParam("name")
-        val team = ctx.messageAsClass<QueueTeam>()
+        val teamBody = ctx.messageAsClass<JsonNode>()
 
-        team.socketId = ctx.sessionId()
+        if (ctx.sessionId() in sessionToTeam) {
+            ctx.sendAsClass(ApiResult.failure("Already in queue"))
+            return
+        }
 
-        idToEntry[queue] = team
+        if (!teamBody.containsAllKeys("players", "attributes")) {
+            ctx.sendAsClass(ApiResult.failure("Invalid team object."))
+            return
+        }
+
+        val team =
+            QueueTeam(
+                teamId = UUID.randomUUID(),
+                players =
+                    Application.objectMapper.treeToValue(
+                        teamBody.get("players"),
+                        object : TypeReference<List<UUID>>() {},
+                    ),
+                attributes = teamBody.get("attributes"),
+            )
+
+        sessionToTeam[ctx.sessionId()] = team
+
         queueManager
             .joinQueue(queue, team) {
+                println("Queue $queue: $it")
                 ctx.sendAsClass(ApiResult.success(it))
             }.onFailure { err ->
                 logger.error(err) { "Failed to join queue" }
                 ctx.sendAsClass(ApiResult.failure("Failed to join queue"))
+            }.onSuccess {
+                ctx.sendAsClass(ApiResult.success("Successfully joined queue"))
             }
     }
 
     fun onClose(ctx: WsCloseContext) {
         val queue = ctx.pathParam("name")
-        val team = idToEntry[queue]
+        val team = sessionToTeam[ctx.sessionId()]
         if (team != null) {
             queueManager.leaveQueue(queue, team)
         } else {

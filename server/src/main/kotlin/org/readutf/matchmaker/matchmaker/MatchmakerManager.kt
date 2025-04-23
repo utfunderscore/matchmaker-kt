@@ -37,7 +37,7 @@ class MatchmakerManager(
         logger.info { "Creating matchmaker $creator" }
         val creator = creators[creator] ?: return Err(Throwable("Matchmaker not found"))
         return creator
-            .createMatchmaker(jsonNode)
+            .deserialize(jsonNode)
             .onSuccess { matchmaker ->
                 matchmakers[matchmaker.name] = matchmaker
                 matchmakerStore.saveMatchmakers(creators, matchmakers.values).onFailure {

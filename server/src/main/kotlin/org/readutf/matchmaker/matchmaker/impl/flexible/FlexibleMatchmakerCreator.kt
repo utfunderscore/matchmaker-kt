@@ -10,7 +10,7 @@ import org.readutf.matchmaker.matchmaker.Matchmaker
 import org.readutf.matchmaker.matchmaker.MatchmakerCreator
 
 class FlexibleMatchmakerCreator : MatchmakerCreator {
-    override fun createMatchmaker(jsonNode: JsonNode): Result<Matchmaker, Throwable> {
+    override fun deserialize(jsonNode: JsonNode): Result<Matchmaker, Throwable> {
         val name =
             (jsonNode.get("name") ?: return Err(Exception("Missing 'name' field"))).asText()
         val targetTeamSize =
@@ -37,21 +37,18 @@ class FlexibleMatchmakerCreator : MatchmakerCreator {
     }
 
     override fun serialize(matchmaker: Matchmaker): Result<JsonNode, Throwable> {
-        val matchmaker =
-            matchmaker as? FlexibleMatchmaker ?: return Err(Exception("Matchmaker is not a FlexibleMatchmaker"))
+        val converted = matchmaker as? FlexibleMatchmaker ?: return Err(Exception("Matchmaker is not a FlexibleMatchmaker"))
 
         return runCatching {
             Application.objectMapper.valueToTree(
                 mapOf(
-                    "name" to matchmaker.name,
-                    "targetTeamSize" to matchmaker.targetTeamSize,
-                    "minTeamSize" to matchmaker.minTeamSize,
-                    "maxTeamSize" to matchmaker.maxTeamSize,
-                    "numberOfTeams" to matchmaker.numberOfTeams,
+                    "name" to converted.name,
+                    "targetTeamSize" to converted.targetTeamSize,
+                    "minTeamSize" to converted.minTeamSize,
+                    "maxTeamSize" to converted.maxTeamSize,
+                    "numberOfTeams" to converted.numberOfTeams,
                 ),
             )
         }
     }
-
-    override fun deserialize(jsonNode: JsonNode): Result<Matchmaker, Throwable> = createMatchmaker(jsonNode)
 }

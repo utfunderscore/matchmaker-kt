@@ -16,8 +16,8 @@ import org.readutf.matchmaker.matchmaker.api.MatchmakerCreateEndpoint
 import org.readutf.matchmaker.matchmaker.api.MatchmakerCreatorListEndpoint
 import org.readutf.matchmaker.matchmaker.api.MatchmakerDeleteEndpoint
 import org.readutf.matchmaker.matchmaker.api.MatchmakerListEndpoint
+import org.readutf.matchmaker.matchmaker.impl.elo.EloMatchmakerCreator
 import org.readutf.matchmaker.matchmaker.impl.flexible.FlexibleMatchmakerCreator
-import org.readutf.matchmaker.matchmaker.impl.pgvector.VectorSearchCreator
 import org.readutf.matchmaker.matchmaker.store.MatchmakerStore
 import org.readutf.matchmaker.matchmaker.store.impl.JsonMatchmakerStore
 import org.readutf.matchmaker.queue.QueueManager
@@ -43,10 +43,10 @@ class Application(
 
     private var running = true
     private val gameProvider: GameProvider = PseudoGameProvider()
-    private val matchmakerManager = MatchmakerManager(matchmakerStore)
-    private val queueManager = QueueManager(queueStore)
+    val matchmakerManager = MatchmakerManager(matchmakerStore)
+    val queueManager = QueueManager(gameProvider, queueStore)
 
-    private val javalin =
+    val javalin: Javalin =
         Javalin.create {
             it.showJavalinBanner = false
             it.useVirtualThreads = true
@@ -64,7 +64,8 @@ class Application(
         val pgVectorDatasource = HikariDataSource(pgVectorConfig)
 
         matchmakerManager.registerCreator("flexible", FlexibleMatchmakerCreator())
-        matchmakerManager.registerCreator("pgvector", VectorSearchCreator(pgVectorDatasource))
+        matchmakerManager.registerCreator("elo", EloMatchmakerCreator())
+
         matchmakerManager.loadMatchmakers().onFailure {
             throw it
         }
@@ -72,15 +73,15 @@ class Application(
         queueManager.loadQueues(matchmakerManager)
 
         javalin
-            .get("/api/matchmakers", MatchmakerListEndpoint(matchmakerManager))
-            .get("/api/matchmaker/types", MatchmakerCreatorListEndpoint(matchmakerManager))
-            .put("/api/matchmaker/{name}", MatchmakerCreateEndpoint(matchmakerManager))
-            .delete("/api/matchmaker/{name}", MatchmakerDeleteEndpoint(matchmakerManager))
-            .get("/api/queue/{name}", QueueInfoEndpoint(queueManager))
-            .get("/api/queues", QueueListEndpoint(queueManager))
-            .put("/api/queue/{name}", QueueCreateEndpoint(queueManager, matchmakerManager))
-            .delete("/api/queue/{name}", QueueDeleteEndpoint(queueManager))
-            .ws("/api/queue/{name}", QueueJoinSocket(queueManager))
+            .get("/api/private/matchmakers", MatchmakerListEndpoint(matchmakerManager))
+            .get("/api/private/matchmaker/types", MatchmakerCreatorListEndpoint(matchmakerManager))
+            .put("/api/private/matchmaker/{type}", MatchmakerCreateEndpoint(matchmakerManager))
+            .delete("/api/private/matchmaker/{name}", MatchmakerDeleteEndpoint(matchmakerManager))
+            .get("/api/private/queue/{name}", QueueInfoEndpoint(queueManager))
+            .get("/api/private/queues", QueueListEndpoint(queueManager))
+            .put("/api/private/queue/{name}", QueueCreateEndpoint(queueManager, matchmakerManager))
+            .delete("/api/private/queue/{name}", QueueDeleteEndpoint(queueManager))
+            .ws("/api/public/queue/{name}", QueueJoinSocket(queueManager))
 
         Runtime.getRuntime().addShutdownHook(
             Thread {
@@ -89,7 +90,7 @@ class Application(
         )
     }
 
-    fun shutdown() {
+    private fun shutdown() {
         if (!running) return
         queueManager.shutdown()
         matchmakerManager.shutdown()

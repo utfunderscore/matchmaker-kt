@@ -1,6 +1,5 @@
 plugins {
     kotlin("jvm") version "2.1.0"
-    id("org.jlleitschuh.gradle.ktlint") version "12.2.0"
 }
 
 group = "io.github.utfunderscore"
@@ -63,7 +62,9 @@ dependencies {
     /**
      * Kafka messaging library
      */
-    implementation("org.apache.kafka:kafka-clients:4.0.0")
+    implementation("org.apache.kafka:kafka-clients:4.0.0") {
+        // exclude logback
+    }
 
     /**
      * Testcontainers - Create docker containers for needed dependencies during test runtime
@@ -71,7 +72,7 @@ dependencies {
     testImplementation("org.testcontainers:testcontainers:1.20.4")
     testImplementation("org.testcontainers:postgresql:1.20.0")
 
-    testImplementation("io.javalin:javalin-bundle:6.4.0")
+    testImplementation("io.javalin:javalin-testtools:6.6.0")
 
     /**
      * MockK - Mocking library for Kotlin
@@ -80,11 +81,7 @@ dependencies {
 }
 
 tasks.test {
-    useTestNG()
-}
-
-tasks.test {
-    useTestNG()
+    useJUnit()
 }
 kotlin {
     jvmToolchain(23)
