@@ -43,3 +43,14 @@ bin/
 
 ### Mac OS ###
 .DS_Store
+/.idea/.gitignore
+/.idea/dataSources.xml
+/gradle.properties
+/.idea/gradle.xml
+/.idea/kotlinc.xml
+/.idea/ktlint-plugin.xml
+/matchmakers.json
+/.idea/misc.xml
+/queues.json
+/.idea/sqldialects.xml
+/.idea/vcs.xml
