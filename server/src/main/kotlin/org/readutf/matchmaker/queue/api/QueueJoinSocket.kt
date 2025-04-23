@@ -13,7 +13,7 @@ import java.util.function.Consumer
 
 // /api/queue/{name}
 class QueueJoinSocket(
-    val queueManager: QueueManager,
+    private val queueManager: QueueManager,
 ) : Consumer<WsConfig> {
     private val logger = KotlinLogging.logger { }
     private val idToEntry = mutableMapOf<String, QueueTeam>()
