@@ -14,7 +14,7 @@ abstract class PooledMatchmaker(
     abstract fun matchmake(teams: List<QueueTeam>): MatchMakerResult
 
     override fun addTeam(team: QueueTeam): Result<Unit, Throwable> {
-        teams.put(team.teamId, team)
+        teams[team.teamId] = team
         return Ok(Unit)
     }
 
