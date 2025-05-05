@@ -73,7 +73,7 @@ class Application(
         queueManager.loadQueues(matchmakerManager)
 
         javalin
-            .get("/api/private/matchmakers", MatchmakerListEndpoint(matchmakerManager))
+            .get("/api/private/matchmaker", MatchmakerListEndpoint(matchmakerManager))
             .get("/api/private/matchmaker/types", MatchmakerCreatorListEndpoint(matchmakerManager))
             .put("/api/private/matchmaker/{type}", MatchmakerCreateEndpoint(matchmakerManager))
             .delete("/api/private/matchmaker/{name}", MatchmakerDeleteEndpoint(matchmakerManager))

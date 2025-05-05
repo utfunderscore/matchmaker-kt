@@ -49,7 +49,7 @@ abstract class PythonMatchmaker(
 
         val requestId = UUID.randomUUID()
         val future = CompletableFuture<PythonResult>()
-        logger.info { "Matchmaking $teamData with id $requestId" }
+//        logger.info { "Matchmaking $teamData with id $requestId" }
         pythonConsumerTask.addRequestFuture(requestId, future)
 
         val request = createRequest()

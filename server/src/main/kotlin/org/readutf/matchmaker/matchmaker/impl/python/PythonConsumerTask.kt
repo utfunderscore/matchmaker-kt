@@ -50,7 +50,13 @@ object PythonConsumerTask : Thread() {
         }
 
     init {
-        Runtime.getRuntime().addShutdownHook(Thread { consumer.close() })
+        Runtime.getRuntime().addShutdownHook(
+            Thread {
+                synchronized(consumer) {
+                    consumer.close()
+                }
+            },
+        )
     }
 
     override fun run() {
