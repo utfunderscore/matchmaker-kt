@@ -1,9 +1,10 @@
 package org.readutf.matchmaker.matchmaker.impl.elo
 
 import com.github.michaelbull.result.Err
+import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
 import org.readutf.matchmaker.matchmaker.MatchMakerResult
-import org.readutf.matchmaker.matchmaker.PooledMatchmaker
+import org.readutf.matchmaker.matchmaker.Matchmaker
 import org.readutf.matchmaker.queue.QueueTeam
 import org.readutf.matchmaker.utils.containsAllKeys
 import kotlin.math.abs
@@ -12,8 +13,8 @@ class EloMatchmaker(
     name: String,
     val rangeExpansionAmount: Int,
     val rangeExpansionTime: Long,
-) : PooledMatchmaker("pooled_elo", name) {
-    override fun matchmake(teams: List<QueueTeam>): MatchMakerResult {
+) : Matchmaker("pooled_elo", name) {
+    override fun matchmake(teams: Collection<QueueTeam>): MatchMakerResult {
         val ranges = teams.map { team -> getRange(team) }
 
         val intersectingPairs = findIntersectingRanges(ranges)
@@ -25,12 +26,12 @@ class EloMatchmaker(
         return MatchMakerResult.MatchMakerSuccess(listOf(listOf(first.queueTeam), listOf(second.queueTeam)))
     }
 
-    override fun addTeam(team: QueueTeam): Result<Unit, Throwable> {
+    override fun validateTeam(team: QueueTeam): Result<Unit, Throwable> {
         if (team.attributes.containsAllKeys("elo")) {
             return Err(Exception("Team must contain a 'elo' attribute"))
         }
 
-        return super.addTeam(team)
+        return Ok(Unit)
     }
 
     private fun findIntersectingRanges(ranges: List<EloRange>): List<Pair<EloRange, EloRange>> {

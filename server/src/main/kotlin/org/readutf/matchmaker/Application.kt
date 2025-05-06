@@ -5,8 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.github.michaelbull.result.onFailure
-import com.zaxxer.hikari.HikariConfig
-import com.zaxxer.hikari.HikariDataSource
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.javalin.Javalin
 import org.readutf.matchmaker.game.GameProvider
@@ -55,13 +53,6 @@ class Application(
 
     init {
         logger.info { "Starting Matchmaker..." }
-        val pgVectorConfig = HikariConfig()
-
-        pgVectorConfig.jdbcUrl = databaseUrl
-        pgVectorConfig.username = username
-        pgVectorConfig.password = password
-
-        val pgVectorDatasource = HikariDataSource(pgVectorConfig)
 
         matchmakerManager.registerCreator("flexible", FlexibleMatchmakerCreator())
         matchmakerManager.registerCreator("elo", EloMatchmakerCreator())

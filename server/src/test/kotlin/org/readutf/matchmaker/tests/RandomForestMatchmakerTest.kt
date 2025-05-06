@@ -26,11 +26,7 @@ class RandomForestMatchmakerTest {
 
         println(teams.size)
 
-        teams.forEach {
-            modelMatchmaker.addTeam(it)
-        }
-
-        println(modelMatchmaker.matchmake())
+        println(modelMatchmaker.matchmake(teams))
     }
 
     fun testAddTeam() {

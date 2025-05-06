@@ -1,7 +1,9 @@
 package org.readutf.matchmaker.matchmaker.impl.flexible
 
+import com.github.michaelbull.result.Ok
+import com.github.michaelbull.result.Result
 import org.readutf.matchmaker.matchmaker.MatchMakerResult
-import org.readutf.matchmaker.matchmaker.PooledMatchmaker
+import org.readutf.matchmaker.matchmaker.Matchmaker
 import org.readutf.matchmaker.queue.QueueTeam
 import org.readutf.matchmaker.utils.AddendFinder
 import org.readutf.matchmaker.utils.SkipCoverage
@@ -16,13 +18,13 @@ class FlexibleMatchmaker(
     val minTeamSize: Int,
     val maxTeamSize: Int,
     val numberOfTeams: Int,
-) : PooledMatchmaker("flexible", name) {
+) : Matchmaker("flexible", name) {
     /**
      * A set of all valid team sizes for the target team size.
      */
     private val validTeamComposition: Set<List<Int>> = AddendFinder.findUniqueAddends(targetTeamSize)
 
-    override fun matchmake(teams: List<QueueTeam>): MatchMakerResult {
+    override fun matchmake(teams: Collection<QueueTeam>): MatchMakerResult {
         val totalPlayers = teams.sumOf { it.players.size }
 
         if (totalPlayers < targetTeamSize * numberOfTeams) {
@@ -46,6 +48,8 @@ class FlexibleMatchmaker(
         }
         return MatchMakerResult.MatchMakerSuccess(results)
     }
+
+    override fun validateTeam(team: QueueTeam): Result<Unit, Throwable> = Ok(Unit)
 
     @SkipCoverage
     override fun equals(other: Any?): Boolean {

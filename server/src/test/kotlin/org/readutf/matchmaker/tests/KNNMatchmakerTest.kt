@@ -24,13 +24,7 @@ class KNNMatchmakerTest {
                 QueueTeam(UUID.randomUUID(), "socketId", listOf(UUID.randomUUID()), it)
             }
 
-        println(teams.size)
-
-        teams.forEach {
-            modelMatchmaker.addTeam(it)
-        }
-
-        println(modelMatchmaker.matchmake())
+        println(modelMatchmaker.matchmake(teams))
     }
 
     fun testAddTeam() {

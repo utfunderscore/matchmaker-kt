@@ -47,7 +47,7 @@ open class Queue(
             return Err(Exception("One or more players in the team are already in the queue"))
         }
 
-        matchmaker.addTeam(team).getOrElse { return Err(it) }
+        matchmaker.validateTeam(team).getOrElse { return Err(it) }
 
         inQueue[team.teamId] = team
         listeners[team.socketId] = callback
@@ -57,7 +57,7 @@ open class Queue(
 
     @Synchronized
     fun tickQueue(gameProvider: GameProvider) {
-        when (val result = matchmaker.matchmake()) {
+        when (val result = matchmaker.matchmake(inQueue.values)) {
             is MatchMakerResult.MatchMakerFailure -> {
                 logger.error(result.err) { "Matchmaker failure" }
             }
@@ -91,7 +91,6 @@ open class Queue(
             return Err(Exception("Team is not in queue"))
         }
 
-        matchmaker.removeTeam(team.teamId)
         inQueue.remove(team.teamId)
         listeners.remove(team.socketId)
         return Ok(Unit)

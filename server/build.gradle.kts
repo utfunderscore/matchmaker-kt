@@ -50,16 +50,6 @@ dependencies {
     testImplementation("com.michael-bull.kotlin-result:kotlin-result:2.0.1")
 
     /**
-     * HikariCP - High performance JDBC connection pool
-     */
-    implementation("com.zaxxer:HikariCP:5.1.0")
-
-    /**
-     * PostgreSQL JDBC driver
-     */
-    implementation("org.postgresql:postgresql:42.7.5")
-
-    /**
      * Kafka messaging library
      */
     implementation("org.apache.kafka:kafka-clients:4.0.0") {
@@ -70,8 +60,6 @@ dependencies {
      * Testcontainers - Create docker containers for needed dependencies during test runtime
      */
     testImplementation("org.testcontainers:testcontainers:1.20.4")
-    testImplementation("org.testcontainers:postgresql:1.20.0")
-
     testImplementation("io.javalin:javalin-testtools:6.6.0")
 
     /**

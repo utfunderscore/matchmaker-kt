@@ -10,7 +10,7 @@ import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.readutf.matchmaker.Application
 import org.readutf.matchmaker.matchmaker.MatchMakerResult
-import org.readutf.matchmaker.matchmaker.PooledMatchmaker
+import org.readutf.matchmaker.matchmaker.Matchmaker
 import org.readutf.matchmaker.queue.QueueTeam
 import java.util.UUID
 import java.util.concurrent.CompletableFuture
@@ -20,7 +20,7 @@ abstract class PythonMatchmaker(
     type: String,
     name: String,
     private val topic: String,
-) : PooledMatchmaker(type, name) {
+) : Matchmaker(type, name) {
     private val logger = KotlinLogging.logger { }
 
     private var producerSettings: Map<String, Any> =
@@ -33,7 +33,7 @@ abstract class PythonMatchmaker(
     private val producer = KafkaProducer<String, String>(producerSettings)
     private val pythonConsumerTask = PythonConsumerTask
 
-    override fun matchmake(teams: List<QueueTeam>): MatchMakerResult {
+    override fun matchmake(teams: Collection<QueueTeam>): MatchMakerResult {
         val teamMap = teams.associateBy { it.teamId }
 
         val teamData =

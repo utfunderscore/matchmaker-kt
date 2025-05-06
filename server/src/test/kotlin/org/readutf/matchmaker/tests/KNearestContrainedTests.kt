@@ -33,7 +33,7 @@ class KNearestContrainedTests {
 
         val team1Player = UUID.randomUUID()
         val teamResult =
-            kNearest.addTeam(
+            kNearest.validateTeam(
                 QueueTeam(
                     teamId = UUID.randomUUID(),
                     players = listOf(team1Player),
@@ -71,7 +71,7 @@ class KNearestContrainedTests {
 
         val team1Player = UUID.randomUUID()
         val teamResult =
-            kNearest.addTeam(
+            kNearest.validateTeam(
                 QueueTeam(
                     teamId = UUID.randomUUID(),
                     players = listOf(team1Player),
@@ -112,27 +112,27 @@ class KNearestContrainedTests {
             )
 
         val team1Player = UUID.randomUUID()
-        val teamResult =
-            kNearest.addTeam(
-                QueueTeam(
-                    teamId = UUID.randomUUID(),
-                    players = listOf(team1Player),
-                    attributes =
-                        objectMapper.valueToTree(
-                            mapOf(
-                                "lifetime_level" to 5,
-                                "lifetime_kd" to 5,
-                                "lifetime_kills" to 5,
-                                "lifetime_deaths" to 5,
-                                "lifetime_kills_per_match" to 5,
-                            ),
+        val team =
+            QueueTeam(
+                teamId = UUID.randomUUID(),
+                players = listOf(team1Player),
+                attributes =
+                    objectMapper.valueToTree(
+                        mapOf(
+                            "lifetime_level" to 5,
+                            "lifetime_kd" to 5,
+                            "lifetime_kills" to 5,
+                            "lifetime_deaths" to 5,
+                            "lifetime_kills_per_match" to 5,
                         ),
-                ),
+                    ),
             )
+
+        val teamResult = kNearest.validateTeam(team)
 
         assertTrue { teamResult.isOk }
 
-        val matchmakeResult = kNearest.matchmake()
+        val matchmakeResult = kNearest.matchmake(listOf(team))
 
         assertTrue { matchmakeResult is MatchMakerResult.MatchMakerSkip }
         kNearest.shutdown()
@@ -158,47 +158,49 @@ class KNearestContrainedTests {
             )
 
         val team1Player = UUID.randomUUID()
-        val team1Result =
-            kNearest.addTeam(
-                QueueTeam(
-                    teamId = UUID.randomUUID(),
-                    players = listOf(team1Player),
-                    attributes =
-                        objectMapper.valueToTree(
-                            mapOf(
-                                "lifetime_level" to 5,
-                                "lifetime_kd" to 5,
-                                "lifetime_kills" to 5,
-                                "lifetime_deaths" to 5,
-                                "lifetime_kills_per_match" to 5,
-                            ),
+
+        val team1 =
+            QueueTeam(
+                teamId = UUID.randomUUID(),
+                players = listOf(team1Player),
+                attributes =
+                    objectMapper.valueToTree(
+                        mapOf(
+                            "lifetime_level" to 5,
+                            "lifetime_kd" to 5,
+                            "lifetime_kills" to 5,
+                            "lifetime_deaths" to 5,
+                            "lifetime_kills_per_match" to 5,
                         ),
-                ),
+                    ),
             )
+
+        val team1Result = kNearest.validateTeam(team1)
 
         assertTrue { team1Result.isOk }
 
         val team2Player = UUID.randomUUID()
-        val team2Result =
-            kNearest.addTeam(
-                QueueTeam(
-                    teamId = UUID.randomUUID(),
-                    players = listOf(team2Player),
-                    attributes =
-                        objectMapper.valueToTree(
-                            mapOf(
-                                "lifetime_level" to 5,
-                                "lifetime_kd" to 5,
-                                "lifetime_kills" to 5,
-                                "lifetime_deaths" to 5,
-                                "lifetime_kills_per_match" to 5,
-                            ),
+
+        val team2 =
+            QueueTeam(
+                teamId = UUID.randomUUID(),
+                players = listOf(team2Player),
+                attributes =
+                    objectMapper.valueToTree(
+                        mapOf(
+                            "lifetime_level" to 5,
+                            "lifetime_kd" to 5,
+                            "lifetime_kills" to 5,
+                            "lifetime_deaths" to 5,
+                            "lifetime_kills_per_match" to 5,
                         ),
-                ),
+                    ),
             )
 
+        val team2Result = kNearest.validateTeam(team2)
+
         assertTrue { team2Result.isOk }
-        val matchmakeResult = kNearest.matchmake()
+        val matchmakeResult = kNearest.matchmake(listOf(team1, team2))
 
         if (matchmakeResult is MatchMakerResult.MatchMakerFailure) {
             println("Matchmake failed with error")
