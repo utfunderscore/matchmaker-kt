@@ -4,5 +4,6 @@ import java.util.UUID
 
 data class PythonResult(
     val requestId: String,
-    val teams: List<List<UUID>>,
+    val teams: List<List<UUID>>?,
+    val error: String?,
 )

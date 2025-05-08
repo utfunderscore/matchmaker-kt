@@ -33,9 +33,6 @@ class MatchmakerApiTests {
 
     private val application =
         Application(
-            databaseUrl = "jdbc:postgresql://localhost:5432/example_db",
-            username = "postgres",
-            password = "password",
             matchmakerStore = jsonMatchmakerStore,
             queueStore = jsonQueueStore,
         )
@@ -90,7 +87,7 @@ class MatchmakerApiTests {
                 // Perform a request after adding each key-value pair
                 val result = client.put("/api/private/matchmaker/flexible", body)
 
-                // Log intermediate result
+                // Log intermeYou must also upload your artefact source code via suppordiate result
                 logger.info { "Request with $key=$value: response code ${result.code}" }
 
                 assertEquals(

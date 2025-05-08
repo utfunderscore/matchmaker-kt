@@ -7,6 +7,11 @@ import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.github.michaelbull.result.onFailure
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.javalin.Javalin
+import io.javalin.apibuilder.ApiBuilder.delete
+import io.javalin.apibuilder.ApiBuilder.get
+import io.javalin.apibuilder.ApiBuilder.path
+import io.javalin.apibuilder.ApiBuilder.put
+import io.javalin.apibuilder.ApiBuilder.ws
 import org.readutf.matchmaker.game.GameProvider
 import org.readutf.matchmaker.game.impl.PseudoGameProvider
 import org.readutf.matchmaker.matchmaker.MatchmakerManager
@@ -16,6 +21,7 @@ import org.readutf.matchmaker.matchmaker.api.MatchmakerDeleteEndpoint
 import org.readutf.matchmaker.matchmaker.api.MatchmakerListEndpoint
 import org.readutf.matchmaker.matchmaker.impl.elo.EloMatchmakerCreator
 import org.readutf.matchmaker.matchmaker.impl.flexible.FlexibleMatchmakerCreator
+import org.readutf.matchmaker.matchmaker.impl.python.creators.PythonMatchmakerCreator
 import org.readutf.matchmaker.matchmaker.store.MatchmakerStore
 import org.readutf.matchmaker.matchmaker.store.impl.JsonMatchmakerStore
 import org.readutf.matchmaker.queue.QueueManager
@@ -31,9 +37,6 @@ import java.util.UUID
 import kotlin.io.path.Path
 
 class Application(
-    databaseUrl: String = "jdbc:postgresql://localhost:5432/example_db",
-    username: String,
-    password: String,
     matchmakerStore: MatchmakerStore,
     queueStore: QueueStore,
 ) {
@@ -44,18 +47,16 @@ class Application(
     val matchmakerManager = MatchmakerManager(matchmakerStore)
     val queueManager = QueueManager(gameProvider, queueStore)
 
-    val javalin: Javalin =
-        Javalin.create {
-            it.showJavalinBanner = false
-            it.useVirtualThreads = true
-            it.bundledPlugins.enableDevLogging()
-        }
+    lateinit var javalin: Javalin
 
     init {
         logger.info { "Starting Matchmaker..." }
 
         matchmakerManager.registerCreator("flexible", FlexibleMatchmakerCreator())
         matchmakerManager.registerCreator("elo", EloMatchmakerCreator())
+        matchmakerManager.registerCreator("knn", PythonMatchmakerCreator("knn", "knn"))
+        matchmakerManager.registerCreator("random_forest", PythonMatchmakerCreator("random_forest", "random_forest"))
+        matchmakerManager.registerCreator("k_means", PythonMatchmakerCreator("k_means", "k_means"))
 
         matchmakerManager.loadMatchmakers().onFailure {
             throw it
@@ -63,16 +64,37 @@ class Application(
 
         queueManager.loadQueues(matchmakerManager)
 
-        javalin
-            .get("/api/private/matchmaker", MatchmakerListEndpoint(matchmakerManager))
-            .get("/api/private/matchmaker/types", MatchmakerCreatorListEndpoint(matchmakerManager))
-            .put("/api/private/matchmaker/{type}", MatchmakerCreateEndpoint(matchmakerManager))
-            .delete("/api/private/matchmaker/{name}", MatchmakerDeleteEndpoint(matchmakerManager))
-            .get("/api/private/queue/{name}", QueueInfoEndpoint(queueManager))
-            .get("/api/private/queues", QueueListEndpoint(queueManager))
-            .put("/api/private/queue/{name}", QueueCreateEndpoint(queueManager, matchmakerManager))
-            .delete("/api/private/queue/{name}", QueueDeleteEndpoint(queueManager))
-            .ws("/api/public/queue/{name}", QueueJoinSocket(queueManager))
+        javalin =
+            Javalin.create {
+                it.showJavalinBanner = false
+                it.useVirtualThreads = true
+
+                it.router.apiBuilder {
+                    path("/api/private/matchmaker") {
+                        get(MatchmakerListEndpoint(matchmakerManager))
+                        path("/types") {
+                            get(MatchmakerCreatorListEndpoint(matchmakerManager))
+                        }
+                        path("{type}") {
+                            put(MatchmakerCreateEndpoint(matchmakerManager))
+                            delete(MatchmakerDeleteEndpoint(matchmakerManager))
+                        }
+                    }
+                    path("/api/private/queue") {
+                        path("{name}") {
+                            get(QueueInfoEndpoint(queueManager))
+                            put(QueueCreateEndpoint(queueManager, matchmakerManager))
+                            delete(QueueDeleteEndpoint(queueManager))
+                        }
+                        get(QueueListEndpoint(queueManager))
+                    }
+                    path("/api/public/queue") {
+                        path("{name}") {
+                            ws(QueueJoinSocket(queueManager))
+                        }
+                    }
+                }
+            }
 
         Runtime.getRuntime().addShutdownHook(
             Thread {
@@ -139,9 +161,6 @@ fun main() {
     val jsonQueueStore = JsonQueueStore(workDir)
 
     Application(
-        databaseUrl = "jdbc:postgresql://localhost:5432/example_db",
-        username = "postgres",
-        password = "password",
         matchmakerStore = jsonMatchmakerStore,
         queueStore = jsonQueueStore,
     ).start("0.0.0.0", 7000)

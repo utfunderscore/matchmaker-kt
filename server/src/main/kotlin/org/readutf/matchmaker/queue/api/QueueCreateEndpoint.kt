@@ -10,6 +10,7 @@ import org.readutf.matchmaker.utils.failure
 import org.readutf.matchmaker.utils.success
 
 // /api/queue/{name}?matchmaker={type}
+
 class QueueCreateEndpoint(
     private val queueManager: QueueManager,
     private val matchmakerManager: MatchmakerManager,

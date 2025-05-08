@@ -34,25 +34,27 @@ object PythonConsumerTask : Thread() {
     }
 
     private val consumer: KafkaConsumer<String, String> =
-        KafkaConsumer<String, String>(consumerSettings).also {
-            it.subscribe(
-                listOf("result_channel"),
-                object : ConsumerRebalanceListener {
-                    override fun onPartitionsRevoked(partitions: MutableCollection<TopicPartition>?) {
-                    }
+        synchronized(this) {
+            KafkaConsumer<String, String>(consumerSettings).also {
+                it.subscribe(
+                    listOf("result_channel"),
+                    object : ConsumerRebalanceListener {
+                        override fun onPartitionsRevoked(partitions: MutableCollection<TopicPartition>?) {
+                        }
 
-                    override fun onPartitionsAssigned(partitions: MutableCollection<TopicPartition>?) {
-                        logger.info { "Partitions assigned: $partitions" }
-                        connectionFuture.complete(Unit)
-                    }
-                },
-            )
+                        override fun onPartitionsAssigned(partitions: MutableCollection<TopicPartition>?) {
+                            logger.info { "Partitions assigned: $partitions" }
+                            connectionFuture.complete(Unit)
+                        }
+                    },
+                )
+            }
         }
 
     init {
         Runtime.getRuntime().addShutdownHook(
             Thread {
-                synchronized(consumer) {
+                synchronized(this) {
                     consumer.close()
                 }
             },

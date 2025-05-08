@@ -59,6 +59,7 @@ class QueueJoinSocket(
             .joinQueue(queue, team) {
                 println("Queue $queue: $it")
                 ctx.sendAsClass(ApiResult.success(it))
+                ctx.closeSession()
             }.onFailure { err ->
                 logger.error(err) { "Failed to join queue" }
                 ctx.sendAsClass(ApiResult.failure("Failed to join queue"))

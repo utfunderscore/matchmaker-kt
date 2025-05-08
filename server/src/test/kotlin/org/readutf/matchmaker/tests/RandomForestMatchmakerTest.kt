@@ -3,13 +3,55 @@ package org.readutf.matchmaker.tests
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.JsonNode
 import org.readutf.matchmaker.Application
-import org.readutf.matchmaker.matchmaker.impl.python.impl.ModelMatchmaker
+import org.readutf.matchmaker.matchmaker.impl.python.PythonMatchmaker
 import org.readutf.matchmaker.queue.QueueTeam
 import java.util.UUID
 import kotlin.test.Test
 
 class RandomForestMatchmakerTest {
-    private val modelMatchmaker = ModelMatchmaker("test-knn", "random_forest", 5)
+    private val modelMatchmaker =
+        PythonMatchmaker(
+            "test-knn",
+            "random_forest",
+            "random_forest",
+            2,
+            listOf(
+                "orange.lifetimeKdAvg",
+                "blue.lifetimeKdAvg",
+                "orange.lifetimeKillsAvg",
+                "blue.lifetimeKillsAvg",
+                "orange.lifetimeDeathsAvg",
+                "blue.lifetimeDeathsAvg",
+                "orange.lifetimeKillsPerMatchAvg",
+                "blue.lifetimeKillsPerMatchAvg",
+                "orange.lifetimeHeadshotPctAvg",
+                "blue.lifetimeHeadshotPctAvg",
+                "orange.lifetimeMatchesWonAvg",
+                "blue.lifetimeMatchesWonAvg",
+                "orange.lifetimeMatchesLostAvg",
+                "blue.lifetimeMatchesLostAvg",
+                "orange.lifetimeMatchesAbandonedAvg",
+                "blue.lifetimeMatchesAbandonedAvg",
+                "orange.lifetimeMatchWinPctAvg",
+                "blue.lifetimeMatchWinPctAvg",
+                "orange.lastSeasonKillsAvg",
+                "blue.lastSeasonKillsAvg",
+                "orange.lastSeasonDeathsAvg",
+                "blue.lastSeasonDeathsAvg",
+                "orange.lastSeasonKillsPerMatchAvg",
+                "blue.lastSeasonKillsPerMatchAvg",
+                "orange.lastSeasonMatchesWonAvg",
+                "blue.lastSeasonMatchesWonAvg",
+                "orange.lastSeasonMatchesLostAvg",
+                "blue.lastSeasonMatchesLostAvg",
+                "orange.lastSeasonMatchesAbandonedAvg",
+                "blue.lastSeasonMatchesAbandonedAvg",
+                "orange.lastSeasonMatchWinPctAvg",
+                "blue.lastSeasonMatchWinPctAvg",
+                "orange.lastSeasonBestRankIdAvg",
+                "blue.lastSeasonBestRankIdAvg",
+            ),
+        )
 
     private val jsonContent =
         RandomForestMatchmakerTest::class.java.getResource("/random_row.json")?.readText()

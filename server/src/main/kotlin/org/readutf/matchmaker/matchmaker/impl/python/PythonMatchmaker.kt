@@ -1,10 +1,12 @@
 package org.readutf.matchmaker.matchmaker.impl.python
 
 import com.fasterxml.jackson.core.type.TypeReference
+import com.github.michaelbull.result.Err
+import com.github.michaelbull.result.Ok
+import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.onFailure
 import com.github.michaelbull.result.onSuccess
 import com.github.michaelbull.result.runCatching
-import io.github.oshai.kotlinlogging.KotlinLogging
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.clients.producer.ProducerRecord
@@ -12,17 +14,18 @@ import org.readutf.matchmaker.Application
 import org.readutf.matchmaker.matchmaker.MatchMakerResult
 import org.readutf.matchmaker.matchmaker.Matchmaker
 import org.readutf.matchmaker.queue.QueueTeam
+import org.readutf.matchmaker.utils.containsAllKeys
 import java.util.UUID
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
-abstract class PythonMatchmaker(
-    type: String,
+class PythonMatchmaker(
     name: String,
-    private val topic: String,
+    type: String,
+    val topic: String,
+    val batchSize: Int,
+    val features: List<String>,
 ) : Matchmaker(type, name) {
-    private val logger = KotlinLogging.logger { }
-
     private var producerSettings: Map<String, Any> =
         mapOf(
             ProducerConfig.BOOTSTRAP_SERVERS_CONFIG to "localhost:29092",
@@ -34,6 +37,10 @@ abstract class PythonMatchmaker(
     private val pythonConsumerTask = PythonConsumerTask
 
     override fun matchmake(teams: Collection<QueueTeam>): MatchMakerResult {
+        if (teams.size < batchSize) {
+            return MatchMakerResult.skip()
+        }
+
         val teamMap = teams.associateBy { it.teamId }
 
         val teamData =
@@ -52,7 +59,7 @@ abstract class PythonMatchmaker(
 //        logger.info { "Matchmaking $teamData with id $requestId" }
         pythonConsumerTask.addRequestFuture(requestId, future)
 
-        val request = createRequest()
+        val request = mutableMapOf<String, Any>()
         request["requestId"] = requestId.toString()
         request["teams"] = teamData
 
@@ -74,6 +81,10 @@ abstract class PythonMatchmaker(
         val result =
             try {
                 val result = future.get(15, TimeUnit.SECONDS)
+
+                if (result.error != null || result.teams == null) {
+                    return MatchMakerResult.MatchMakerFailure(Throwable(result.error ?: "Unknown python error"))
+                }
                 val queueTeams = result.teams.map { team -> team.map { teamId -> teamMap[teamId]!! } }
 
                 MatchMakerResult.MatchMakerSuccess(queueTeams)
@@ -84,7 +95,13 @@ abstract class PythonMatchmaker(
         return result
     }
 
-    abstract fun createRequest(): MutableMap<String, Any?>
+    override fun validateTeam(team: QueueTeam): Result<Unit, Throwable> {
+        if (!team.attributes.containsAllKeys(features)) {
+            return Err(IllegalArgumentException("Team does not contain all required attributes"))
+        }
+
+        return Ok(Unit)
+    }
 
     override fun shutdown() {
         println("Shutting down PythonMatchmaker...")

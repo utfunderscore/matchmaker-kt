@@ -1,5 +1,6 @@
 package org.readutf.matchmaker.matchmaker.impl.flexible
 
+import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
 import org.readutf.matchmaker.matchmaker.MatchMakerResult
@@ -49,7 +50,14 @@ class FlexibleMatchmaker(
         return MatchMakerResult.MatchMakerSuccess(results)
     }
 
-    override fun validateTeam(team: QueueTeam): Result<Unit, Throwable> = Ok(Unit)
+    override fun validateTeam(team: QueueTeam): Result<Unit, Throwable> {
+        val teamSize = team.players.size
+        return if (teamSize in minTeamSize..maxTeamSize) {
+            Ok(Unit)
+        } else {
+            Err(IllegalStateException("The team size $teamSize is not in the required range!"))
+        }
+    }
 
     @SkipCoverage
     override fun equals(other: Any?): Boolean {

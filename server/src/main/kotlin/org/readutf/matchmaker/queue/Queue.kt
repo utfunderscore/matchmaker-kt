@@ -20,7 +20,7 @@ import java.util.function.Consumer
  * @param name The name of the queue
  * @param matchmaker The matchmaker that will match the teams
  */
-open class Queue(
+class Queue(
     val name: String,
     @JsonIgnore val matchmaker: Matchmaker,
 ) {

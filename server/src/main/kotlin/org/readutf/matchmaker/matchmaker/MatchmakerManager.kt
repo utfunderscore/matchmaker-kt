@@ -6,7 +6,6 @@ import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.map
 import com.github.michaelbull.result.onFailure
 import com.github.michaelbull.result.onSuccess
-import io.github.oshai.kotlinlogging.KLogger
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.readutf.matchmaker.matchmaker.store.MatchmakerStore
 
@@ -21,10 +20,9 @@ import org.readutf.matchmaker.matchmaker.store.MatchmakerStore
 class MatchmakerManager(
     private val matchmakerStore: MatchmakerStore,
 ) {
-    private val logger: KLogger = KotlinLogging.logger { }
-    private val creators: MutableMap<String, MatchmakerCreator> =
-        mutableMapOf<String, MatchmakerCreator>()
-    private val matchmakers: MutableMap<String, Matchmaker> = mutableMapOf<String, Matchmaker>()
+    private val logger = KotlinLogging.logger { }
+    private val creators = mutableMapOf<String, MatchmakerCreator>()
+    private val matchmakers = mutableMapOf<String, Matchmaker>()
 
     fun getMatchmaker(name: String): Matchmaker? = matchmakers[name]
 

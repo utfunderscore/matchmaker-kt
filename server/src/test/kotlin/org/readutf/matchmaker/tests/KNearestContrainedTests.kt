@@ -3,7 +3,7 @@ package org.readutf.matchmaker.tests
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.junit.Test
 import org.readutf.matchmaker.matchmaker.MatchMakerResult
-import org.readutf.matchmaker.matchmaker.impl.python.impl.KNearestConstrainedMatchmaker
+import org.readutf.matchmaker.matchmaker.impl.python.PythonMatchmaker
 import org.readutf.matchmaker.queue.QueueTeam
 import java.util.UUID
 import kotlin.test.assertTrue
@@ -19,8 +19,10 @@ class KNearestContrainedTests {
         }
 
         val kNearest =
-            KNearestConstrainedMatchmaker(
+            PythonMatchmaker(
                 "test_knearest",
+                "kmeans",
+                "kmeans",
                 2,
                 listOf(
                     "lifetime_level",
@@ -57,8 +59,10 @@ class KNearestContrainedTests {
             return
         }
         val kNearest =
-            KNearestConstrainedMatchmaker(
+            PythonMatchmaker(
                 "test_knearest",
+                "kmeans",
+                "kmeans",
                 2,
                 listOf(
                     "lifetime_level",
@@ -99,8 +103,10 @@ class KNearestContrainedTests {
             return
         }
         val kNearest =
-            KNearestConstrainedMatchmaker(
+            PythonMatchmaker(
                 "test_knearest",
+                "kmeans",
+                "kmeans",
                 2,
                 listOf(
                     "lifetime_level",
@@ -145,8 +151,10 @@ class KNearestContrainedTests {
             return
         }
         val kNearest =
-            KNearestConstrainedMatchmaker(
+            PythonMatchmaker(
                 "test_knearest",
+                "kmeans",
+                "kmeans",
                 2,
                 listOf(
                     "lifetime_level",

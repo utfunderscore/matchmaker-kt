@@ -19,7 +19,10 @@ dependencies {
     /**
      * Javalin - Simple web framework for Java and Kotlin
      */
-    implementation("io.javalin:javalin:6.4.0")
+    implementation("io.javalin:javalin:6.6.0")
+    implementation("io.javalin.community.openapi:javalin-openapi-plugin:6.6.0")
+    implementation("io.javalin.community.openapi:javalin-swagger-plugin:6.6.0")
+    implementation("io.javalin.community.openapi:javalin-redoc-plugin:6.6.0")
 
     /**
      * tinylog 2 - Tiny logging library
@@ -56,10 +59,12 @@ dependencies {
         // exclude logback
     }
 
+    annotationProcessor("io.javalin.community.openapi:openapi-annotation-processor:6.6.0")
+
     /**
      * Testcontainers - Create docker containers for needed dependencies during test runtime
      */
-    testImplementation("org.testcontainers:testcontainers:1.20.4")
+    testImplementation("org.testcontainers:testcontainers:1.21.0")
     testImplementation("io.javalin:javalin-testtools:6.6.0")
 
     /**

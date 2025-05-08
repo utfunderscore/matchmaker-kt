@@ -7,7 +7,6 @@ import org.readutf.matchmaker.matchmaker.MatchMakerResult
 import org.readutf.matchmaker.matchmaker.Matchmaker
 import org.readutf.matchmaker.queue.QueueTeam
 import org.readutf.matchmaker.utils.containsAllKeys
-import kotlin.math.abs
 
 class EloMatchmaker(
     name: String,
@@ -15,15 +14,20 @@ class EloMatchmaker(
     val rangeExpansionTime: Long,
 ) : Matchmaker("pooled_elo", name) {
     override fun matchmake(teams: Collection<QueueTeam>): MatchMakerResult {
-        val ranges = teams.map { team -> getRange(team) }
+        // Iterate over every team in the queue
+        for (team in teams) {
+            val range = getRange(team) // Get the elo range for the current team
 
-        val intersectingPairs = findIntersectingRanges(ranges)
+            for (opponent in teams) { // Iterate over every other team
+                if (opponent == team) continue
+                val opponentElo = getElo(opponent) // Get the elo of the current opponent
 
-        val (first, second) =
-            intersectingPairs.minByOrNull { pair -> abs(pair.first.original - pair.second.original) }
-                ?: return MatchMakerResult.MatchMakerSkip
-
-        return MatchMakerResult.MatchMakerSuccess(listOf(listOf(first.queueTeam), listOf(second.queueTeam)))
+                if (opponentElo in range.min..range.max) { // Check the opponents elo is within the current range
+                    return MatchMakerResult.MatchMakerSuccess(listOf(listOf(team), listOf(opponent)))
+                }
+            }
+        }
+        return MatchMakerResult.MatchMakerSkip
     }
 
     override fun validateTeam(team: QueueTeam): Result<Unit, Throwable> {
@@ -34,21 +38,9 @@ class EloMatchmaker(
         return Ok(Unit)
     }
 
-    private fun findIntersectingRanges(ranges: List<EloRange>): List<Pair<EloRange, EloRange>> {
-        val intersectingPairs = mutableListOf<Pair<EloRange, EloRange>>()
-        for (i in ranges.indices) {
-            for (j in i + 1 until ranges.size) {
-                if (ranges[i].intersects(ranges[j])) {
-                    intersectingPairs.add(ranges[i] to ranges[j])
-                }
-            }
-        }
-        return intersectingPairs
-    }
-
     private fun getRange(queueTeam: QueueTeam): EloRange {
         val difference = System.nanoTime() - queueTeam.joinedAt
-        val elo = queueTeam.attributes.get("elo").asInt()
+        val elo = getElo(queueTeam)
 
         val rangeExpansion = (difference / rangeExpansionTime).toInt() * rangeExpansionAmount
 
@@ -59,13 +51,11 @@ class EloMatchmaker(
         )
     }
 
+    private fun getElo(queueTeam: QueueTeam): Int = queueTeam.attributes.get("elo").asInt()
+
     private data class EloRange(
         val queueTeam: QueueTeam,
         val min: Int,
         val max: Int,
-    ) {
-        val original = (min + max) / 2
-
-        fun intersects(other: EloRange): Boolean = (min <= other.max && other.min <= max)
-    }
+    )
 }

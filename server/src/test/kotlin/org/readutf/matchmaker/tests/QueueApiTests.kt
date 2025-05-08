@@ -7,6 +7,7 @@ import com.github.michaelbull.result.getOrThrow
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.javalin.http.Context
 import io.javalin.http.HttpStatus
+import io.javalin.websocket.WsCloseContext
 import io.javalin.websocket.WsMessageContext
 import io.mockk.every
 import io.mockk.mockk
@@ -41,9 +42,6 @@ class QueueApiTests {
 
     private val application =
         Application(
-            databaseUrl = "jdbc:postgresql://localhost:5432/example_db",
-            username = "postgres",
-            password = "password",
             matchmakerStore = jsonMatchmakerStore,
             queueStore = jsonQueueStore,
         )
@@ -198,6 +196,18 @@ class QueueApiTests {
     }
 
     @Test
+    fun `queue socket close - team not found`() {
+        val endpoint = QueueJoinSocket(queueManager)
+
+        val closeContext = mockk<WsCloseContext>(relaxed = true)
+
+        every { closeContext.pathParam("name") } returns "test"
+        every { closeContext.sessionId() } returns "test-session"
+
+        endpoint.onClose(closeContext)
+    }
+
+    @Test
     fun `queue list endpoint`() {
         val queueListEndpoint = QueueListEndpoint(queueManager)
 
@@ -242,24 +252,19 @@ class QueueApiTests {
     @Test
     fun `queue join - success`() {
         val queueManager = spyk(application.queueManager)
-
         val server = GameServer("", "", 25)
+
+        // Mock the join queue state
         every { queueManager.joinQueue(any(), any(), any()) } answers {
             val consumer = thirdArg<Consumer<GameServer>>()
-
             consumer.accept(server)
-
             Ok(Unit)
         }
-
         val endpoint = QueueJoinSocket(queueManager)
-
         val queueName = "queue-join-success"
-
         createQueue(queueName)
 
         val messageContext = mockk<WsMessageContext>(relaxed = true)
-
         every { messageContext.pathParam("name") } returns queueName
         every { messageContext.messageAsClass<JsonNode>() } returns
             Application.objectMapper.valueToTree(
@@ -268,14 +273,16 @@ class QueueApiTests {
                     "attributes" to Application.objectMapper.createObjectNode(),
                 ),
             )
-        every { messageContext.sessionId() } returns "test-session-id"
-
+        val sessionId = "test-session-id"
+        every { messageContext.sessionId() } returns sessionId
         endpoint.onMessage(messageContext)
-
         Thread.sleep(10)
-
         verify { messageContext.sendAsClass(ApiResult.success("Successfully joined queue")) }
         verify { messageContext.sendAsClass(ApiResult.success(server)) }
+        val closeContext = mockk<WsCloseContext>(relaxed = true)
+        every { closeContext.pathParam("name") } returns queueName
+        every { closeContext.sessionId() } returns sessionId
+        endpoint.onClose(closeContext)
     }
 
     @Test

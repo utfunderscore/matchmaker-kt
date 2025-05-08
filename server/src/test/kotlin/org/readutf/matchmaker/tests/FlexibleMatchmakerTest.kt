@@ -33,7 +33,7 @@ class FlexibleMatchmakerTest {
         assertTrue {
             creator
                 .deserialize(
-                    objectMapper.valueToTree<JsonNode>(
+                    objectMapper.valueToTree(
                         mapOf(
                             "name" to "test",
                             "targetTeamSize" to 5,
@@ -110,7 +110,7 @@ class FlexibleMatchmakerTest {
         assertTrue {
             creator
                 .deserialize(
-                    objectMapper.valueToTree<JsonNode>(
+                    objectMapper.valueToTree(
                         mapOf(
                             "name" to "test",
                             "targetTeamSize" to 5,
@@ -129,7 +129,7 @@ class FlexibleMatchmakerTest {
         assertTrue {
             creator
                 .deserialize(
-                    objectMapper.valueToTree<JsonNode>(
+                    objectMapper.valueToTree(
                         mapOf(
                             "name" to "test",
                             "targetTeamSize" to 5,

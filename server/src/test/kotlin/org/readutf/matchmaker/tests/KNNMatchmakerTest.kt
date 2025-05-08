@@ -3,13 +3,41 @@ package org.readutf.matchmaker.tests
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.JsonNode
 import org.readutf.matchmaker.Application
-import org.readutf.matchmaker.matchmaker.impl.python.impl.ModelMatchmaker
+import org.readutf.matchmaker.matchmaker.MatchMakerResult
+import org.readutf.matchmaker.matchmaker.impl.python.PythonMatchmaker
+import org.readutf.matchmaker.matchmaker.impl.python.creators.PythonMatchmakerCreator
 import org.readutf.matchmaker.queue.QueueTeam
 import java.util.UUID
 import kotlin.test.Test
+import kotlin.test.assertTrue
 
 class KNNMatchmakerTest {
-    private val modelMatchmaker = ModelMatchmaker("test-knn", "knn", 5)
+    private val modelMatchmaker =
+        PythonMatchmaker(
+            "test-knn",
+            "knn",
+            "knn",
+            5,
+            listOf(
+                "lifetimeKdAvg",
+                "lifetimeKillsAvg",
+                "lifetimeDeathsAvg",
+                "lifetimeKillsPerMatchAvg",
+                "lifetimeHeadshotPctAvg",
+                "lifetimeMatchesWonAvg",
+                "lifetimeMatchesLostAvg",
+                "lifetimeMatchesAbandonedAvg",
+                "lifetimeMatchWinPctAvg",
+                "lastSeasonKillsAvg",
+                "lastSeasonDeathsAvg",
+                "lastSeasonKillsPerMatchAvg",
+                "lastSeasonMatchesWonAvg",
+                "lastSeasonMatchesLostAvg",
+                "lastSeasonMatchesAbandonedAvg",
+                "lastSeasonMatchWinPctAvg",
+                "lastSeasonBestRankIdAvg",
+            ),
+        )
 
     private val jsonContent =
         RandomForestMatchmakerTest::class.java.getResource("/random_row.json")?.readText()
@@ -18,13 +46,27 @@ class KNNMatchmakerTest {
     private val teamData = Application.objectMapper.readValue(jsonContent, object : TypeReference<List<JsonNode>>() {})
 
     @Test
-    fun test() {
+    fun successful() {
         val teams =
             teamData.map {
                 QueueTeam(UUID.randomUUID(), "socketId", listOf(UUID.randomUUID()), it)
             }
 
-        println(modelMatchmaker.matchmake(teams))
+        assertTrue { modelMatchmaker.matchmake(teams) is MatchMakerResult.MatchMakerSuccess }
+    }
+
+    @Test
+    fun testSerialisation() {
+        val creator = PythonMatchmakerCreator("knn", "knn")
+
+        val params =
+            mapOf(
+                "name" to "test",
+                "batch_size" to 5,
+                "features" to emptyList<String>(),
+            )
+
+        creator.deserialize(Application.objectMapper.valueToTree(params))
     }
 
     fun testAddTeam() {
