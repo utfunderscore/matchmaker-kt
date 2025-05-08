@@ -1,11 +1,13 @@
 package org.readutf.matchmaker.utils
 
+import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.annotation.JsonInclude.Include
 import io.javalin.http.Context
 import io.javalin.http.HttpStatus
 
 data class ApiResult<T>(
     val success: Boolean,
-    val data: T?,
+    @JsonInclude(Include.NON_NULL) val data: T?,
 ) {
     companion object {
         fun <T> success(data: T): ApiResult<T> = ApiResult(true, data)

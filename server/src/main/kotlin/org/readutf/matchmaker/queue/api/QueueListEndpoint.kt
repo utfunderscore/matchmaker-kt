@@ -6,7 +6,7 @@ import org.readutf.matchmaker.queue.QueueManager
 import org.readutf.matchmaker.utils.success
 
 class QueueListEndpoint(
-    val queueManager: QueueManager,
+    private val queueManager: QueueManager,
 ) : Handler {
     override fun handle(ctx: Context) {
         ctx.success(queueManager.getQueues())

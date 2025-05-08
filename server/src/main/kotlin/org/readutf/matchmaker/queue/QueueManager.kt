@@ -4,6 +4,8 @@ import com.github.michaelbull.result.Err
 import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.getOrThrow
+import org.readutf.matchmaker.game.GameProvider
+import org.readutf.matchmaker.game.GameServer
 import org.readutf.matchmaker.matchmaker.Matchmaker
 import org.readutf.matchmaker.matchmaker.MatchmakerManager
 import org.readutf.matchmaker.queue.store.QueueStore
@@ -13,7 +15,8 @@ import java.util.concurrent.TimeUnit
 import java.util.function.Consumer
 
 class QueueManager(
-    val queueStore: QueueStore,
+    private val gameProvider: GameProvider,
+    private val queueStore: QueueStore,
 ) {
     private val queues: MutableMap<String, Queue> = mutableMapOf<String, Queue>()
 
@@ -40,7 +43,7 @@ class QueueManager(
         queueExecutors[queue.name] = executor
 
         executor.scheduleAtFixedRate({
-            queue.tickQueue()
+            queue.tickQueue(gameProvider)
         }, 0, 1, TimeUnit.SECONDS)
     }
 
@@ -52,7 +55,7 @@ class QueueManager(
     fun joinQueue(
         queueName: String,
         team: QueueTeam,
-        callback: Consumer<List<List<QueueTeam>>>,
+        callback: Consumer<GameServer>,
     ): Result<Unit, Throwable> {
         val queue = queues[queueName] ?: return Err(Exception("Queue does not exist"))
 

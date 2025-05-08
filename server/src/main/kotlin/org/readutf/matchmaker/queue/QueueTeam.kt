@@ -6,8 +6,8 @@ import java.util.UUID
 
 data class QueueTeam(
     val teamId: UUID,
-    @JsonIgnore val joinedAt: Long = System.nanoTime(),
-    @JsonIgnore val socketId: String,
+    @JsonIgnore val socketId: String = "",
     val players: List<UUID>,
     val attributes: JsonNode,
+    @JsonIgnore val joinedAt: Long = System.nanoTime(),
 )

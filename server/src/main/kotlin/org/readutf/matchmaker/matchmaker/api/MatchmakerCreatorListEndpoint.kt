@@ -6,7 +6,7 @@ import org.readutf.matchmaker.matchmaker.MatchmakerManager
 import org.readutf.matchmaker.utils.success
 
 class MatchmakerCreatorListEndpoint(
-    val matchmakerManager: MatchmakerManager,
+    private val matchmakerManager: MatchmakerManager,
 ) : Handler {
     override fun handle(ctx: Context) {
         ctx.success(matchmakerManager.getCreatorIds())

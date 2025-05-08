@@ -8,7 +8,7 @@ import org.readutf.matchmaker.utils.success
 
 // /api/queue/{name}/
 class QueueInfoEndpoint(
-    val queueManager: QueueManager,
+    private val queueManager: QueueManager,
 ) : Handler {
     override fun handle(ctx: Context) {
         val queueName = ctx.pathParam("name")

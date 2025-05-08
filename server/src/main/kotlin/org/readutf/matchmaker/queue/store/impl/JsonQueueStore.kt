@@ -21,6 +21,10 @@ class JsonQueueStore(
     }
 
     override fun saveQueues(queues: List<Queue>): Result<Unit, Throwable> {
+        if (!file.exists()) {
+            file.parentFile.mkdirs()
+            file.createNewFile()
+        }
         objectMapper.writeValue(file.bufferedWriter(), queues.map { QueueData(it.name, it.matchmaker.name) })
         return Ok(Unit)
     }
