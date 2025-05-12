@@ -8,57 +8,45 @@ object AddendFinder {
     )
 
     fun findUniqueAddends(target: Int): Set<List<Int>> {
-        // Store the resulting sets of unique addends.
-        val result = mutableSetOf<List<Int>>()
+        val result = mutableSetOf<List<Int>>() // Store the unique addends as they are found
 
-        // Use a stack to simulate the recursive calls. Each element in the stack
-        // represents a state of the backtracking process.
+        // Create a stack to track the steps in the backtrack
         val stack = ArrayDeque<BacktrackState>()
-
-        // Initialize the stack with the initial state.
+        // Initialise the stack with the starting state
         stack.addFirst(BacktrackState(target, mutableListOf(), 1))
-
-        // Process the stack until it's empty.
+        // Process the stack untill it is empty
         while (stack.isNotEmpty()) {
             // Get the current state from the top of the stack.
-            val (remaining, currentCombination, start) =
-                stack.removeFirst().let {
-                    Triple(it.remaining, it.currentCombination, it.start)
-                }
+            val (remaining, currentCombination, start) = stack.removeFirst()
 
             // If the remaining value is 0, we've found a valid combination.
             if (remaining == 0) {
                 // Add a copy of the current combination to the result set.
                 result.add(currentCombination.toList())
-                continue // Continue to the next state in the stack.
+                continue
             }
 
             // If the remaining value is negative, the current combination is invalid.
             if (remaining < 0) {
-                continue // Continue to the next state in the stack.
+                continue
             }
 
-            // Iterate through possible addends, starting from the 'start' value up to
-            // the 'remaining' value.
+            // Iterate through possible addends
             for (i in start..remaining) {
-                // Create a new combination by adding the current addend 'i' to the
-                // existing combination.
+                // Create a new combination by adding the 'i' to the existing combination.
                 val newCombination = currentCombination.toMutableList()
                 newCombination.add(i)
 
-                // Push a new state onto the stack, representing the next step in the
-                // backtracking process.
+                // Push a new state onto the stack
                 stack.addFirst(BacktrackState(remaining - i, newCombination, i))
             }
         }
-
-        // Return the set of unique addend combinations.
         return result
     }
 }
 
 fun main() {
-    val targetNumber = 5
+    val targetNumber = 4
     val uniqueAddends = AddendFinder.findUniqueAddends(targetNumber)
     println("Unique addends for $targetNumber:")
     uniqueAddends.forEach { println(it) }

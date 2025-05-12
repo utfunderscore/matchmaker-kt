@@ -1,6 +1,6 @@
 plugins {
     kotlin("jvm") version "2.1.0"
-    id("org.jlleitschuh.gradle.ktlint") version "12.2.0"
+    application
 }
 
 group = "io.github.utfunderscore"
@@ -20,7 +20,10 @@ dependencies {
     /**
      * Javalin - Simple web framework for Java and Kotlin
      */
-    implementation("io.javalin:javalin:6.4.0")
+    implementation("io.javalin:javalin:6.6.0")
+    implementation("io.javalin.community.openapi:javalin-openapi-plugin:6.6.0")
+    implementation("io.javalin.community.openapi:javalin-swagger-plugin:6.6.0")
+    implementation("io.javalin.community.openapi:javalin-redoc-plugin:6.6.0")
 
     /**
      * tinylog 2 - Tiny logging library
@@ -51,27 +54,19 @@ dependencies {
     testImplementation("com.michael-bull.kotlin-result:kotlin-result:2.0.1")
 
     /**
-     * HikariCP - High performance JDBC connection pool
-     */
-    implementation("com.zaxxer:HikariCP:5.1.0")
-
-    /**
-     * PostgreSQL JDBC driver
-     */
-    implementation("org.postgresql:postgresql:42.7.5")
-
-    /**
      * Kafka messaging library
      */
-    implementation("org.apache.kafka:kafka-clients:4.0.0")
+    implementation("org.apache.kafka:kafka-clients:4.0.0") {
+        // exclude logback
+    }
+
+    annotationProcessor("io.javalin.community.openapi:openapi-annotation-processor:6.6.0")
 
     /**
      * Testcontainers - Create docker containers for needed dependencies during test runtime
      */
-    testImplementation("org.testcontainers:testcontainers:1.20.4")
-    testImplementation("org.testcontainers:postgresql:1.20.0")
-
-    testImplementation("io.javalin:javalin-bundle:6.4.0")
+    testImplementation("org.testcontainers:testcontainers:1.21.0")
+    testImplementation("io.javalin:javalin-testtools:6.6.0")
 
     /**
      * MockK - Mocking library for Kotlin
@@ -79,12 +74,12 @@ dependencies {
     testImplementation("io.mockk:mockk:1.13.16")
 }
 
-tasks.test {
-    useTestNG()
+application {
+    mainClass.set("org.readutf.matchmaker.ApplicationKt")
 }
 
 tasks.test {
-    useTestNG()
+    useJUnit()
 }
 kotlin {
     jvmToolchain(23)

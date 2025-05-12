@@ -5,10 +5,13 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.github.michaelbull.result.onFailure
-import com.zaxxer.hikari.HikariConfig
-import com.zaxxer.hikari.HikariDataSource
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.javalin.Javalin
+import io.javalin.apibuilder.ApiBuilder.delete
+import io.javalin.apibuilder.ApiBuilder.get
+import io.javalin.apibuilder.ApiBuilder.path
+import io.javalin.apibuilder.ApiBuilder.put
+import io.javalin.apibuilder.ApiBuilder.ws
 import org.readutf.matchmaker.game.GameProvider
 import org.readutf.matchmaker.game.impl.PseudoGameProvider
 import org.readutf.matchmaker.matchmaker.MatchmakerManager
@@ -16,8 +19,9 @@ import org.readutf.matchmaker.matchmaker.api.MatchmakerCreateEndpoint
 import org.readutf.matchmaker.matchmaker.api.MatchmakerCreatorListEndpoint
 import org.readutf.matchmaker.matchmaker.api.MatchmakerDeleteEndpoint
 import org.readutf.matchmaker.matchmaker.api.MatchmakerListEndpoint
+import org.readutf.matchmaker.matchmaker.impl.elo.EloMatchmakerCreator
 import org.readutf.matchmaker.matchmaker.impl.flexible.FlexibleMatchmakerCreator
-import org.readutf.matchmaker.matchmaker.impl.pgvector.VectorSearchCreator
+import org.readutf.matchmaker.matchmaker.impl.python.creators.PythonMatchmakerCreator
 import org.readutf.matchmaker.matchmaker.store.MatchmakerStore
 import org.readutf.matchmaker.matchmaker.store.impl.JsonMatchmakerStore
 import org.readutf.matchmaker.queue.QueueManager
@@ -33,9 +37,6 @@ import java.util.UUID
 import kotlin.io.path.Path
 
 class Application(
-    databaseUrl: String = "jdbc:postgresql://localhost:5432/example_db",
-    username: String,
-    password: String,
     matchmakerStore: MatchmakerStore,
     queueStore: QueueStore,
 ) {
@@ -43,44 +44,124 @@ class Application(
 
     private var running = true
     private val gameProvider: GameProvider = PseudoGameProvider()
-    private val matchmakerManager = MatchmakerManager(matchmakerStore)
-    private val queueManager = QueueManager(queueStore)
+    val matchmakerManager = MatchmakerManager(matchmakerStore)
+    val queueManager = QueueManager(gameProvider, queueStore)
 
-    private val javalin =
-        Javalin.create {
-            it.showJavalinBanner = false
-            it.useVirtualThreads = true
-            it.bundledPlugins.enableDevLogging()
-        }
+    lateinit var javalin: Javalin
 
     init {
         logger.info { "Starting Matchmaker..." }
-        val pgVectorConfig = HikariConfig()
-
-        pgVectorConfig.jdbcUrl = databaseUrl
-        pgVectorConfig.username = username
-        pgVectorConfig.password = password
-
-        val pgVectorDatasource = HikariDataSource(pgVectorConfig)
 
         matchmakerManager.registerCreator("flexible", FlexibleMatchmakerCreator())
-        matchmakerManager.registerCreator("pgvector", VectorSearchCreator(pgVectorDatasource))
+        matchmakerManager.registerCreator("elo", EloMatchmakerCreator())
+        matchmakerManager.registerCreator(
+            "knn",
+            PythonMatchmakerCreator(
+                "knn",
+                "knn",
+                listOf(
+                    "lifetimeKdAvg",
+                    "lifetimeKillsAvg",
+                    "lifetimeDeathsAvg",
+                    "lifetimeKillsPerMatchAvg",
+                    "lifetimeHeadshotPctAvg",
+                    "lifetimeMatchesWonAvg",
+                    "lifetimeMatchesLostAvg",
+                    "lifetimeMatchesAbandonedAvg",
+                    "lifetimeMatchWinPctAvg",
+                    "lastSeasonKillsAvg",
+                    "lastSeasonDeathsAvg",
+                    "lastSeasonKillsPerMatchAvg",
+                    "lastSeasonMatchesWonAvg",
+                    "lastSeasonMatchesLostAvg",
+                    "lastSeasonMatchesAbandonedAvg",
+                    "lastSeasonMatchWinPctAvg",
+                    "lastSeasonBestRankIdAvg",
+                ),
+            ),
+        )
+        matchmakerManager.registerCreator(
+            "random_forest",
+            PythonMatchmakerCreator(
+                "random_forest",
+                "random_forest",
+                listOf(
+                    "orange.lifetimeKdAvg",
+                    "blue.lifetimeKdAvg",
+                    "orange.lifetimeKillsAvg",
+                    "blue.lifetimeKillsAvg",
+                    "orange.lifetimeDeathsAvg",
+                    "blue.lifetimeDeathsAvg",
+                    "orange.lifetimeKillsPerMatchAvg",
+                    "blue.lifetimeKillsPerMatchAvg",
+                    "orange.lifetimeHeadshotPctAvg",
+                    "blue.lifetimeHeadshotPctAvg",
+                    "orange.lifetimeMatchesWonAvg",
+                    "blue.lifetimeMatchesWonAvg",
+                    "orange.lifetimeMatchesLostAvg",
+                    "blue.lifetimeMatchesLostAvg",
+                    "orange.lifetimeMatchesAbandonedAvg",
+                    "blue.lifetimeMatchesAbandonedAvg",
+                    "orange.lifetimeMatchWinPctAvg",
+                    "blue.lifetimeMatchWinPctAvg",
+                    "orange.lastSeasonKillsAvg",
+                    "blue.lastSeasonKillsAvg",
+                    "orange.lastSeasonDeathsAvg",
+                    "blue.lastSeasonDeathsAvg",
+                    "orange.lastSeasonKillsPerMatchAvg",
+                    "blue.lastSeasonKillsPerMatchAvg",
+                    "orange.lastSeasonMatchesWonAvg",
+                    "blue.lastSeasonMatchesWonAvg",
+                    "orange.lastSeasonMatchesLostAvg",
+                    "blue.lastSeasonMatchesLostAvg",
+                    "orange.lastSeasonMatchesAbandonedAvg",
+                    "blue.lastSeasonMatchesAbandonedAvg",
+                    "orange.lastSeasonMatchWinPctAvg",
+                    "blue.lastSeasonMatchWinPctAvg",
+                    "orange.lastSeasonBestRankIdAvg",
+                    "blue.lastSeasonBestRankIdAvg",
+                ),
+            ),
+        )
+        matchmakerManager.registerCreator("k_means", PythonMatchmakerCreator("k_means", "k_means", emptyList()))
+
         matchmakerManager.loadMatchmakers().onFailure {
             throw it
         }
 
         queueManager.loadQueues(matchmakerManager)
 
-        javalin
-            .get("/api/matchmakers", MatchmakerListEndpoint(matchmakerManager))
-            .get("/api/matchmaker/types", MatchmakerCreatorListEndpoint(matchmakerManager))
-            .put("/api/matchmaker/{name}", MatchmakerCreateEndpoint(matchmakerManager))
-            .delete("/api/matchmaker/{name}", MatchmakerDeleteEndpoint(matchmakerManager))
-            .get("/api/queue/{name}", QueueInfoEndpoint(queueManager))
-            .get("/api/queues", QueueListEndpoint(queueManager))
-            .put("/api/queue/{name}", QueueCreateEndpoint(queueManager, matchmakerManager))
-            .delete("/api/queue/{name}", QueueDeleteEndpoint(queueManager))
-            .ws("/api/queue/{name}", QueueJoinSocket(queueManager))
+        javalin =
+            Javalin.create {
+                it.showJavalinBanner = false
+                it.useVirtualThreads = true
+
+                it.router.apiBuilder {
+                    path("/api/private/matchmaker") {
+                        get(MatchmakerListEndpoint(matchmakerManager))
+                        path("/types") {
+                            get(MatchmakerCreatorListEndpoint(matchmakerManager))
+                        }
+                        path("{type}") {
+                            put(MatchmakerCreateEndpoint(matchmakerManager))
+                            delete(MatchmakerDeleteEndpoint(matchmakerManager))
+                        }
+                    }
+                    path("/api/private/queue") {
+                        path("{name}") {
+                            get(QueueInfoEndpoint(queueManager))
+                            put(QueueCreateEndpoint(queueManager, matchmakerManager))
+                            delete(QueueDeleteEndpoint(queueManager))
+                        }
+                        get(QueueListEndpoint(queueManager))
+                    }
+                    path("/api/public/queue") {
+                        path("{name}") {
+                            ws(QueueJoinSocket(queueManager))
+                        }
+                    }
+                }
+            }
 
         Runtime.getRuntime().addShutdownHook(
             Thread {
@@ -89,7 +170,7 @@ class Application(
         )
     }
 
-    fun shutdown() {
+    private fun shutdown() {
         if (!running) return
         queueManager.shutdown()
         matchmakerManager.shutdown()
@@ -147,9 +228,6 @@ fun main() {
     val jsonQueueStore = JsonQueueStore(workDir)
 
     Application(
-        databaseUrl = "jdbc:postgresql://localhost:5432/example_db",
-        username = "postgres",
-        password = "password",
         matchmakerStore = jsonMatchmakerStore,
         queueStore = jsonQueueStore,
     ).start("0.0.0.0", 7000)

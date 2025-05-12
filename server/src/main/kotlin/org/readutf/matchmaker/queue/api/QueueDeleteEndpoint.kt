@@ -8,13 +8,12 @@ import org.readutf.matchmaker.utils.success
 
 // /api/queue/{name}
 class QueueDeleteEndpoint(
-    val queueManager: QueueManager,
+    private val queueManager: QueueManager,
 ) : Handler {
     override fun handle(ctx: Context) {
         val queueName: String = ctx.pathParam("name")
 
-        if (queueManager.deleteQueue(queueName)) {
-            ctx.status(404)
+        if (!queueManager.deleteQueue(queueName)) {
             ctx.failure("Queue $queueName not found")
             return
         }

@@ -8,6 +8,8 @@ import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.getOrElse
 import com.github.michaelbull.result.onFailure
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.readutf.matchmaker.game.GameProvider
+import org.readutf.matchmaker.game.GameResult
 import org.readutf.matchmaker.matchmaker.MatchMakerResult
 import org.readutf.matchmaker.matchmaker.Matchmaker
 import java.util.UUID
@@ -18,13 +20,13 @@ import java.util.function.Consumer
  * @param name The name of the queue
  * @param matchmaker The matchmaker that will match the teams
  */
-open class Queue(
+class Queue(
     val name: String,
     @JsonIgnore val matchmaker: Matchmaker,
 ) {
     @JsonIgnore private val logger = KotlinLogging.logger { }
 
-    @JsonIgnore private val listeners = mutableMapOf<String, Consumer<List<List<QueueTeam>>>>()
+    @JsonIgnore private val listeners = mutableMapOf<String, Consumer<GameResult>>()
 
     /**
      * Stores the teams currently waiting to be matched
@@ -34,7 +36,7 @@ open class Queue(
     @Synchronized
     fun addTeam(
         team: QueueTeam,
-        callback: Consumer<List<List<QueueTeam>>>,
+        callback: Consumer<GameResult>,
     ): Result<Unit, Throwable> {
         // Check if the team is already in the queue
         if (inQueue.contains(team.teamId)) {
@@ -45,7 +47,7 @@ open class Queue(
             return Err(Exception("One or more players in the team are already in the queue"))
         }
 
-        matchmaker.addTeam(team).getOrElse { return Err(it) }
+        matchmaker.validateTeam(team).getOrElse { return Err(it) }
 
         inQueue[team.teamId] = team
         listeners[team.socketId] = callback
@@ -54,8 +56,8 @@ open class Queue(
     }
 
     @Synchronized
-    fun tickQueue() {
-        when (val result = matchmaker.matchmake()) {
+    fun tickQueue(gameProvider: GameProvider) {
+        when (val result = matchmaker.matchmake(inQueue.values)) {
             is MatchMakerResult.MatchMakerFailure -> {
                 logger.error(result.err) { "Matchmaker failure" }
             }
@@ -65,7 +67,15 @@ open class Queue(
 
                 val involvedSockets = teams.flatten().map { team -> team.socketId }.distinct()
 
-                involvedSockets.mapNotNull { listeners[it] }.forEach { listener -> listener.accept(teams) }
+                println("teams: $teams")
+                println("sockets: $involvedSockets")
+
+                val game = gameProvider.getGame(teams)
+
+                involvedSockets
+                    .mapNotNull {
+                        listeners[it]
+                    }.forEach { listener -> listener.accept(game) }
 
                 teams.flatten().forEach { team ->
                     removeTeam(team).onFailure { err ->
@@ -85,7 +95,6 @@ open class Queue(
             return Err(Exception("Team is not in queue"))
         }
 
-        matchmaker.removeTeam(team.teamId)
         inQueue.remove(team.teamId)
         listeners.remove(team.socketId)
         return Ok(Unit)

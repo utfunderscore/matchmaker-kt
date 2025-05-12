@@ -8,5 +8,5 @@ interface GameProvider {
      * @param teams The teams to find a game for
      * @return The game server id to connect to
      */
-    fun getGame(teams: List<List<QueueTeam>>): GameServer
+    fun getGame(teams: List<List<QueueTeam>>): GameResult
 }

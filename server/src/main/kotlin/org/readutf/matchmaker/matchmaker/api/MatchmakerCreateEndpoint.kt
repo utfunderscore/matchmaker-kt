@@ -11,27 +11,27 @@ import org.readutf.matchmaker.matchmaker.MatchmakerManager
 import org.readutf.matchmaker.utils.failure
 import org.readutf.matchmaker.utils.success
 
-// /api/matchmaker/{name}/
+// /api/matchmaker/{type}/
 class MatchmakerCreateEndpoint(
-    val matchmakerManager: MatchmakerManager,
+    private val matchmakerManager: MatchmakerManager,
 ) : Handler {
     override fun handle(ctx: Context) {
-        val type = ctx.pathParam("name")
+        val type = ctx.pathParam("type")
 
         val jsonBody =
             runCatching {
                 objectMapper.readTree(ctx.body())
-            }.getOrElse { err ->
+            }.getOrElse {
                 ctx.failure("Failed to parse JSON body")
                 return
             }
 
         matchmakerManager
             .createMatchmaker(type, jsonBody)
-            .onSuccess { success ->
+            .onSuccess {
                 ctx.success(null)
             }.onFailure {
-                ctx.failure(it.message ?: "Failed to create matchmaker")
+                ctx.failure(it.message)
             }
     }
 }
