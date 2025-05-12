@@ -39,6 +39,7 @@ class KNearestContrainedTests {
                 QueueTeam(
                     teamId = UUID.randomUUID(),
                     players = listOf(team1Player),
+                    socketId = "",
                     attributes =
                         objectMapper.valueToTree(
                             mapOf(
@@ -79,6 +80,7 @@ class KNearestContrainedTests {
                 QueueTeam(
                     teamId = UUID.randomUUID(),
                     players = listOf(team1Player),
+                    socketId = "",
                     attributes =
                         objectMapper.valueToTree(
                             mapOf(
@@ -122,6 +124,7 @@ class KNearestContrainedTests {
             QueueTeam(
                 teamId = UUID.randomUUID(),
                 players = listOf(team1Player),
+                socketId = "",
                 attributes =
                     objectMapper.valueToTree(
                         mapOf(
@@ -171,6 +174,7 @@ class KNearestContrainedTests {
             QueueTeam(
                 teamId = UUID.randomUUID(),
                 players = listOf(team1Player),
+                socketId = "",
                 attributes =
                     objectMapper.valueToTree(
                         mapOf(
@@ -193,6 +197,7 @@ class KNearestContrainedTests {
             QueueTeam(
                 teamId = UUID.randomUUID(),
                 players = listOf(team2Player),
+                socketId = "",
                 attributes =
                     objectMapper.valueToTree(
                         mapOf(

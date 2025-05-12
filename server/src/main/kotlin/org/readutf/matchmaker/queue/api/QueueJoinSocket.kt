@@ -3,7 +3,6 @@ package org.readutf.matchmaker.queue.api
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.JsonNode
 import com.github.michaelbull.result.onFailure
-import com.github.michaelbull.result.onSuccess
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.javalin.websocket.WsCloseContext
 import io.javalin.websocket.WsConfig
@@ -13,7 +12,9 @@ import org.readutf.matchmaker.queue.QueueManager
 import org.readutf.matchmaker.queue.QueueTeam
 import org.readutf.matchmaker.utils.ApiResult
 import org.readutf.matchmaker.utils.containsAllKeys
+import java.time.Duration
 import java.util.UUID
+import java.util.concurrent.TimeUnit
 import java.util.function.Consumer
 
 // /api/queue/{name}
@@ -26,6 +27,9 @@ class QueueJoinSocket(
     override fun accept(wsConfig: WsConfig) {
         wsConfig.onMessage(::onMessage)
         wsConfig.onClose(::onClose)
+        wsConfig.onConnect { onConnect ->
+            onConnect.session.idleTimeout = Duration.ofMillis(TimeUnit.MINUTES.toMillis(2))
+        }
     }
 
     fun onMessage(ctx: WsMessageContext) {
@@ -50,6 +54,7 @@ class QueueJoinSocket(
                         teamBody.get("players"),
                         object : TypeReference<List<UUID>>() {},
                     ),
+                socketId = ctx.sessionId(),
                 attributes = teamBody.get("attributes"),
             )
 
@@ -63,8 +68,6 @@ class QueueJoinSocket(
             }.onFailure { err ->
                 logger.error(err) { "Failed to join queue" }
                 ctx.sendAsClass(ApiResult.failure("Failed to join queue"))
-            }.onSuccess {
-                ctx.sendAsClass(ApiResult.success("Successfully joined queue"))
             }
     }
 

@@ -12,11 +12,11 @@ import org.readutf.matchmaker.matchmaker.impl.python.PythonMatchmaker
 class PythonMatchmakerCreator(
     val type: String,
     val topic: String,
+    val features: List<String>,
 ) : MatchmakerCreator {
     override fun deserialize(jsonNode: JsonNode): Result<Matchmaker, Throwable> {
         val name = jsonNode.get("name")?.asText() ?: return Err(Throwable("Invalid matchmaker name"))
         val batchSize = jsonNode.get("batch_size")?.asInt() ?: return Err(Throwable("Invalid matchmaker batch size"))
-        val features = jsonNode.get("features")?.map { it.asText() } ?: return Err(Throwable("Invalid matchmaker features"))
 
         return Ok(
             PythonMatchmaker(

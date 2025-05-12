@@ -1,5 +1,6 @@
 plugins {
     kotlin("jvm") version "2.1.0"
+    application
 }
 
 group = "io.github.utfunderscore"
@@ -71,6 +72,10 @@ dependencies {
      * MockK - Mocking library for Kotlin
      */
     testImplementation("io.mockk:mockk:1.13.16")
+}
+
+application {
+    mainClass.set("org.readutf.matchmaker.ApplicationKt")
 }
 
 tasks.test {

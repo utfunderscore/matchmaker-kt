@@ -9,7 +9,7 @@ import com.github.michaelbull.result.getOrElse
 import com.github.michaelbull.result.onFailure
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.readutf.matchmaker.game.GameProvider
-import org.readutf.matchmaker.game.GameServer
+import org.readutf.matchmaker.game.GameResult
 import org.readutf.matchmaker.matchmaker.MatchMakerResult
 import org.readutf.matchmaker.matchmaker.Matchmaker
 import java.util.UUID
@@ -26,7 +26,7 @@ class Queue(
 ) {
     @JsonIgnore private val logger = KotlinLogging.logger { }
 
-    @JsonIgnore private val listeners = mutableMapOf<String, Consumer<GameServer>>()
+    @JsonIgnore private val listeners = mutableMapOf<String, Consumer<GameResult>>()
 
     /**
      * Stores the teams currently waiting to be matched
@@ -36,7 +36,7 @@ class Queue(
     @Synchronized
     fun addTeam(
         team: QueueTeam,
-        callback: Consumer<GameServer>,
+        callback: Consumer<GameResult>,
     ): Result<Unit, Throwable> {
         // Check if the team is already in the queue
         if (inQueue.contains(team.teamId)) {
@@ -67,11 +67,15 @@ class Queue(
 
                 val involvedSockets = teams.flatten().map { team -> team.socketId }.distinct()
 
-                val game =
-                    involvedSockets
-                        .mapNotNull {
-                            listeners[it]
-                        }.forEach { listener -> listener.accept(gameProvider.getGame(teams)) }
+                println("teams: $teams")
+                println("sockets: $involvedSockets")
+
+                val game = gameProvider.getGame(teams)
+
+                involvedSockets
+                    .mapNotNull {
+                        listeners[it]
+                    }.forEach { listener -> listener.accept(game) }
 
                 teams.flatten().forEach { team ->
                     removeTeam(team).onFailure { err ->

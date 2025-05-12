@@ -14,7 +14,7 @@ import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
 import org.readutf.matchmaker.Application
-import org.readutf.matchmaker.game.GameServer
+import org.readutf.matchmaker.game.GameResult
 import org.readutf.matchmaker.matchmaker.store.impl.JsonMatchmakerStore
 import org.readutf.matchmaker.queue.QueueManager
 import org.readutf.matchmaker.queue.api.QueueCreateEndpoint
@@ -252,11 +252,11 @@ class QueueApiTests {
     @Test
     fun `queue join - success`() {
         val queueManager = spyk(application.queueManager)
-        val server = GameServer("", "", 25)
+        val server = GameResult("", "", 25, listOf())
 
         // Mock the join queue state
         every { queueManager.joinQueue(any(), any(), any()) } answers {
-            val consumer = thirdArg<Consumer<GameServer>>()
+            val consumer = thirdArg<Consumer<GameResult>>()
             consumer.accept(server)
             Ok(Unit)
         }

@@ -43,7 +43,7 @@ class KNNMatchmakerTest {
         RandomForestMatchmakerTest::class.java.getResource("/random_row.json")?.readText()
             ?: throw IllegalArgumentException("File not found: random_row.json")
 
-    private val teamData = Application.objectMapper.readValue(jsonContent, object : TypeReference<List<JsonNode>>() {})
+    private val teamData = Application.objectMapper.readValue(jsonContent, object : TypeReference<List<JsonNode>>() {}).take(2)
 
     @Test
     fun successful() {
@@ -52,12 +52,37 @@ class KNNMatchmakerTest {
                 QueueTeam(UUID.randomUUID(), "socketId", listOf(UUID.randomUUID()), it)
             }
 
+        println(Application.objectMapper.writeValueAsString(teams))
+
         assertTrue { modelMatchmaker.matchmake(teams) is MatchMakerResult.MatchMakerSuccess }
     }
 
     @Test
     fun testSerialisation() {
-        val creator = PythonMatchmakerCreator("knn", "knn")
+        val creator =
+            PythonMatchmakerCreator(
+                "knn",
+                "knn",
+                listOf(
+                    "lifetimeKdAvg",
+                    "lifetimeKillsAvg",
+                    "lifetimeDeathsAvg",
+                    "lifetimeKillsPerMatchAvg",
+                    "lifetimeHeadshotPctAvg",
+                    "lifetimeMatchesWonAvg",
+                    "lifetimeMatchesLostAvg",
+                    "lifetimeMatchesAbandonedAvg",
+                    "lifetimeMatchWinPctAvg",
+                    "lastSeasonKillsAvg",
+                    "lastSeasonDeathsAvg",
+                    "lastSeasonKillsPerMatchAvg",
+                    "lastSeasonMatchesWonAvg",
+                    "lastSeasonMatchesLostAvg",
+                    "lastSeasonMatchesAbandonedAvg",
+                    "lastSeasonMatchWinPctAvg",
+                    "lastSeasonBestRankIdAvg",
+                ),
+            )
 
         val params =
             mapOf(

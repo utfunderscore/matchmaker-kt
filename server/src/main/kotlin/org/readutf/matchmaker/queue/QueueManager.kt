@@ -5,7 +5,7 @@ import com.github.michaelbull.result.Ok
 import com.github.michaelbull.result.Result
 import com.github.michaelbull.result.getOrThrow
 import org.readutf.matchmaker.game.GameProvider
-import org.readutf.matchmaker.game.GameServer
+import org.readutf.matchmaker.game.GameResult
 import org.readutf.matchmaker.matchmaker.Matchmaker
 import org.readutf.matchmaker.matchmaker.MatchmakerManager
 import org.readutf.matchmaker.queue.store.QueueStore
@@ -18,7 +18,7 @@ class QueueManager(
     private val gameProvider: GameProvider,
     private val queueStore: QueueStore,
 ) {
-    private val queues: MutableMap<String, Queue> = mutableMapOf<String, Queue>()
+    private val queues: MutableMap<String, Queue> = mutableMapOf()
 
     private val queueExecutors = mutableMapOf<String, ScheduledExecutorService>()
 
@@ -55,7 +55,7 @@ class QueueManager(
     fun joinQueue(
         queueName: String,
         team: QueueTeam,
-        callback: Consumer<GameServer>,
+        callback: Consumer<GameResult>,
     ): Result<Unit, Throwable> {
         val queue = queues[queueName] ?: return Err(Exception("Queue does not exist"))
 

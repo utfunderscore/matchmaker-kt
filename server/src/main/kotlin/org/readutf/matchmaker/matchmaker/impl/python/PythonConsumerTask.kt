@@ -22,7 +22,7 @@ object PythonConsumerTask : Thread() {
 
     private val consumerSettings =
         mapOf(
-            ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG to "localhost:29092",
+            ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG to "kafka:2181",
             ConsumerConfig.GROUP_ID_CONFIG to "test-group",
             ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG to "org.apache.kafka.common.serialization.StringDeserializer",
             ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG to "org.apache.kafka.common.serialization.StringDeserializer",

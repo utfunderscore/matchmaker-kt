@@ -28,7 +28,7 @@ class PythonMatchmaker(
 ) : Matchmaker(type, name) {
     private var producerSettings: Map<String, Any> =
         mapOf(
-            ProducerConfig.BOOTSTRAP_SERVERS_CONFIG to "localhost:29092",
+            ProducerConfig.BOOTSTRAP_SERVERS_CONFIG to "kafka:29092",
             ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG to "org.apache.kafka.common.serialization.StringSerializer",
             ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG to "org.apache.kafka.common.serialization.StringSerializer",
         )

@@ -248,6 +248,7 @@ class FlexibleMatchmakerTest {
                     teamId = UUID.randomUUID(),
                     players = List(4) { UUID.randomUUID() },
                     attributes = jsonNode,
+                    socketId = "",
                 ),
                 QueueTeam(UUID.randomUUID(), "", List(4) { UUID.randomUUID() }, jsonNode),
             )
@@ -275,11 +276,13 @@ class FlexibleMatchmakerTest {
                     teamId = UUID.randomUUID(),
                     players = List(1) { UUID.randomUUID() },
                     attributes = jsonNode,
+                    socketId = "",
                 ),
                 QueueTeam(
                     teamId = UUID.randomUUID(),
                     players = List(1) { UUID.randomUUID() },
                     attributes = jsonNode,
+                    socketId = "",
                 ),
             )
 
